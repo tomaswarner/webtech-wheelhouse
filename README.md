@@ -1,32 +1,32 @@
 # wheelhouse
 
-wheelhouse es una app para un taller de bicis de barrio. la idea es sacar las notas de reparación
-del cuaderno de cada mecánico y dejarlas en una pantalla que cualquiera del mostrador pueda revisar
-sin tener que ir a preguntar atrás.
+wheelhouse is an app for a neighborhood bike repair shop. the idea is to take the repair notes out
+of each mechanic's own notebook and put them on a screen anyone at the counter can check without
+walking to the back.
 
-quién la usa:
+who uses it:
 
-counter staff (la hija del dueño) recibe la bici, la tagea y contesta el teléfono cuando alguien
-pregunta si su bici está lista
+counter staff (the owner's daughter) takes in the bike, tags it, and answers the phone when someone
+asks if their bike is ready
 
-mechanic (son 3) diagnostica, escribe las notas y agrega los trabajos que corresponden
+mechanic (there are 3) diagnoses the bike, writes the notes, and adds the jobs that apply
 
-owner fija la lista de precios y quiere ver qué reparaciones se están atrasando
+owner sets the price list and wants to see which repairs are running late
 
-customer deja la bici, recibe la cotización y dice que sí o que no, todo por teléfono, no tiene login
+customer drops off the bike, gets the quote, and says yes or no, all by phone, no login
 
-website visitor solo ve la lista de precios pública
+website visitor just looks at the public price list
 
-este lab (lab 3) es puro diseño, no hay código todavía. desde el lab 4 en adelante se construye la
-app de rails arriba de este mismo modelo.
+this lab (lab 3) is pure design, no code yet. from lab 4 onward the rails app gets built on top of
+this same model.
 
 ## docs
 
-[user stories](docs/user-stories.md) historias de usuario y criterios de aceptación
+[user stories](docs/user-stories.md) user stories and acceptance criteria
 
-[domain model](docs/domain-model.md) modelo relacional en dbdiagram.io, ciclo de vida de una
-reparación y las decisiones de diseño que hay que defender
+[domain model](docs/domain-model.md) relational model in dbdiagram.io, a repair's lifecycle, and the
+design decisions that need defending
 
-[decisions](docs/decisions.md) preguntas que le haría al dueño si estuviera en la sala
+[decisions](docs/decisions.md) questions i'd ask the owner if he were in the room
 
-[wireframes](docs/wireframes.md) las pantallas en baja fidelidad y el grafo de navegación
+[wireframes](docs/wireframes.md) low fidelity screens and the navigation graph
