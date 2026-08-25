@@ -1,0 +1,32 @@
+<svg viewBox="0 0 700 420" xmlns="http://www.w3.org/2000/svg" font-family="monospace">
+<rect width="700" height="420" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text x="20" y="28" font-size="15" font-weight="bold">navigation graph</text>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+<path d="M0,0 L6,3 L0,6 Z" fill="#000000"/>
+</marker>
+</defs>
+<rect x="40" y="80" width="140" height="50" fill="#dddddd" stroke="#000000"/>
+<text x="110" y="100" font-size="11" text-anchor="middle">1. intake</text>
+<text x="110" y="116" font-size="9" text-anchor="middle" fill="#555555">counter staff</text>
+<rect x="280" y="80" width="160" height="50" fill="#dddddd" stroke="#000000"/>
+<text x="360" y="100" font-size="11" text-anchor="middle">2. status lookup</text>
+<text x="360" y="116" font-size="9" text-anchor="middle" fill="#555555">counter staff</text>
+<rect x="530" y="80" width="140" height="50" fill="#dddddd" stroke="#000000"/>
+<text x="600" y="100" font-size="11" text-anchor="middle">3. diagnosis</text>
+<text x="600" y="116" font-size="9" text-anchor="middle" fill="#555555">mechanic</text>
+<rect x="280" y="240" width="160" height="50" fill="#dddddd" stroke="#000000"/>
+<text x="360" y="260" font-size="11" text-anchor="middle">4. overdue dashboard</text>
+<text x="360" y="276" font-size="9" text-anchor="middle" fill="#555555">owner</text>
+<rect x="530" y="240" width="140" height="50" fill="#eeeeee" stroke="#000000" stroke-dasharray="4"/>
+<text x="600" y="260" font-size="11" text-anchor="middle">5. price list</text>
+<text x="600" y="276" font-size="9" text-anchor="middle" fill="#555555">public, standalone</text>
+<line x1="180" y1="95" x2="278" y2="95" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="278" y1="115" x2="180" y2="115" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="440" y1="95" x2="528" y2="95" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="528" y1="115" x2="440" y2="115" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="360" y1="130" x2="360" y2="238" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="380" y1="238" x2="380" y2="130" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="20" y="360" font-size="10" fill="#555555">every screen among 1–4 can reach and be reached from screen 2</text>
+<text x="20" y="378" font-size="10" fill="#555555">screen 5 is intentionally isolated: it's the public site, not the staff tool</text>
+</svg>
