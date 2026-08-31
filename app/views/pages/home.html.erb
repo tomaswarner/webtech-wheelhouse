@@ -1,0 +1,23 @@
+<h1>Wheelhouse</h1>
+<p class="lead">
+  Wheelhouse keeps track of every bike that comes through the shop, from the moment it's
+  tagged at the counter to the moment it goes home.
+</p>
+
+<div class="row g-4 mt-3">
+  <div class="col-12 col-md-4">
+    <h2 class="h5">See what we charge</h2>
+    <p>The full price list for every job we do, no need to call and ask.</p>
+    <%= link_to "View services", services_path, class: "btn btn-outline-primary" %>
+  </div>
+  <div class="col-12 col-md-4">
+    <h2 class="h5">Bring a bike in</h2>
+    <p>Where we are, when we're open, and what happens once you drop it off.</p>
+    <%= link_to "Visit the workshop", visit_path, class: "btn btn-outline-primary" %>
+  </div>
+  <div class="col-12 col-md-4">
+    <h2 class="h5">Who runs the shop</h2>
+    <p>A small team, three mechanics, and a lot of bikes.</p>
+    <%= link_to "About us", about_path, class: "btn btn-outline-primary" %>
+  </div>
+</div>

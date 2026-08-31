@@ -1,4 +1,4 @@
-# User Storie
+# User Stories
 1. As counter staff, I want to record the customer's name and phone number when they drop off a bike, so that I can contact them when the repair is ready or needs approval on a quote.
 
 2. As counter staff, I want to record the bike's serial number and model, so that I hand back the correct bike after the repair.

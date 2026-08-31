@@ -1,0 +1,19 @@
+<h1>Services</h1>
+<p>We charge by the job, not by the hour. Here's the full list.</p>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">Job</th>
+      <th scope="col">Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @services.each do |service| %>
+      <tr>
+        <td><%= service[:name] %></td>
+        <td>$<%= service[:price] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
