@@ -52,18 +52,29 @@ install js packages
 
     yarn install
 
-create the databases
+create the databases, load the schema and seed it
 
-    bin/rails db:create
+    bin/rails db:setup
+
+`db:setup` creates the development and test databases, loads `db/schema.rb` into them, and runs
+`db/seeds.rb`. on a database that already exists, use `bin/rails db:reset` instead, which drops it
+first.
 
 ## running it
 
     bin/dev
 
-then open http://localhost:3000
+then open http://localhost:3000 — the services page should show the full price list from the
+database.
 
-`bin/rails server` also starts the app, but it won't rebuild the bootstrap css if you change it, so use `bin/dev` instead.
+`bin/rails server` also starts the app, but it won't rebuild the bootstrap css if you change it, so
+use `bin/dev` instead.
 
 ## what's here so far
 
-this is lab 4. the app has 4 pages (home, services, visiting the workshop, about), a hand written controller and routes, and a bootstrap layout with a navbar. no database tables yet, no models, no forms. that starts in lab 5, using the domain model from `docs/domain-model.md`.
+this is lab 5. the schema now exists as migrations in `db/migrate/`, one model per table in
+`app/models/`, and `db/seeds.rb` fills it with a workshop worth looking at. the services page reads
+its data from the database instead of a hardcoded array.
+
+no associations, no validations, no forms yet — that starts in lab 7. `notes` and `photos` aren't in
+the schema yet either, they arrive in lab 9.
