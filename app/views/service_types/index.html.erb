@@ -1,0 +1,10 @@
+<h1>Services</h1>
+<p>We charge by the job, not by the hour. Here's the full list.</p>
+<% if @services.any? %>
+  <table class="table table-striped">
+    <thead><tr><th>Job</th><th>Price</th></tr></thead>
+    <tbody><%= render @services %></tbody>
+  </table>
+<% else %>
+  <p>No services yet.</p>
+<% end %>

@@ -1,0 +1,9 @@
+<h1>Repairs</h1>
+<% if @repairs.any? %>
+  <table class="table table-striped">
+    <thead><tr><th>Bike</th><th>Customer</th><th>Status</th><th>Promised</th></tr></thead>
+    <tbody><%= render @repairs %></tbody>
+  </table>
+<% else %>
+  <p>No repairs yet.</p>
+<% end %>

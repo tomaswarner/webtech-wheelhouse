@@ -1,0 +1,15 @@
+<% provide(:title, "#{@bike.make} #{@bike.model}") %>
+<%= link_to "← Back to bikes", bikes_path %>
+<h1><%= @bike.make %> <%= @bike.model %></h1>
+<p>Serial number: <%= @bike.serial_number %></p>
+<p>Owner: <%= link_to @bike.customer.name, @bike.customer %></p>
+
+<h2>Repairs</h2>
+<% if @bike.repairs.any? %>
+  <table class="table table-striped">
+    <thead><tr><th>Bike</th><th>Customer</th><th>Status</th><th>Promised</th></tr></thead>
+    <tbody><%= render @bike.repairs %></tbody>
+  </table>
+<% else %>
+  <p>This bike has never been in for a repair.</p>
+<% end %>

@@ -1,0 +1,4 @@
+<% provide(:title, @service.name) %>
+<%= link_to "← Back to services", services_path %>
+<h1><%= @service.name %></h1>
+<p>Price: $<%= @service.current_price.to_i %></p>

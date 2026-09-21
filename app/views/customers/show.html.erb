@@ -1,0 +1,14 @@
+<% provide(:title, @customer.name) %>
+<%= link_to "← Back to customers", customers_path %>
+<h1><%= @customer.name %></h1>
+<p>Phone: <%= @customer.phone %></p>
+
+<h2>Bikes</h2>
+<% if @customer.bikes.any? %>
+  <table class="table table-striped">
+    <thead><tr><th>Bike</th><th>Serial</th><th>Owner</th></tr></thead>
+    <tbody><%= render @customer.bikes %></tbody>
+  </table>
+<% else %>
+  <p>This customer has no bikes yet.</p>
+<% end %>

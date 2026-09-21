@@ -1,0 +1,4 @@
+<% provide(:title, @staff_member.name) %>
+<%= link_to "← Back to staff", staff_members_path %>
+<h1><%= @staff_member.name %></h1>
+<p>Role: <%= @staff_member.role.titleize %></p>

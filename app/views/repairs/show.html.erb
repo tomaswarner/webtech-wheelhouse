@@ -1,0 +1,31 @@
+<% provide(:title, "Repair ##{@repair.id}") %>
+<%= link_to "← Back to repairs", repairs_path %>
+<h1>Repair #<%= @repair.id %></h1>
+<p>Bike: <%= link_to "#{@repair.bike.make} #{@repair.bike.model}", @repair.bike %></p>
+<p>Customer: <%= link_to @repair.customer.name, @repair.customer %></p>
+<p>Status: <%= @repair.status.titleize %></p>
+<p>Promised: <%= @repair.promised_on.strftime("%b %d, %Y") %></p>
+<p>Dropped off: <%= @repair.dropped_off_at.strftime("%b %d, %Y %I:%M %p") %></p>
+<% if @repair.picked_up_at %>
+  <p>Picked up: <%= @repair.picked_up_at.strftime("%b %d, %Y %I:%M %p") %></p>
+<% end %>
+
+<h2>Services charged</h2>
+<% if @repair.repair_line_items.any? %>
+  <table class="table table-striped">
+    <thead><tr><th>Service</th><th>Price charged</th></tr></thead>
+    <tbody>
+      <% @repair.repair_line_items.each do |item| %>
+        <tr>
+          <td><%= link_to item.service_type.name, service_path(item.service_type) %></td>
+          <td>$<%= item.price_charged.to_i %></td>
+        </tr>
+      <% end %>
+    </tbody>
+    <tfoot>
+      <tr><th>Total</th><th>$<%= @repair.repair_line_items.sum(:price_charged).to_i %></th></tr>
+    </tfoot>
+  </table>
+<% else %>
+  <p>No services have been charged on this repair yet.</p>
+<% end %>

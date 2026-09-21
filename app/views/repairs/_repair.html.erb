@@ -1,0 +1,6 @@
+<tr class="<%= 'table-danger' if repair.promised_on < Date.current && repair.picked_up_at.nil? %>">
+  <td><%= link_to "#{repair.bike.make} #{repair.bike.model}", repair %></td>
+  <td><%= link_to repair.customer.name, repair.customer %></td>
+  <td><%= repair.status.titleize %></td>
+  <td><%= repair.promised_on.strftime("%b %d, %Y") %></td>
+</tr>
