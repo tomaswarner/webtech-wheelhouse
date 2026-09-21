@@ -1,6 +1,6 @@
 class ServiceTypesController < ApplicationController
   def index
-    @services = ServiceType.order(:name)
+    @services = ServiceType.by_name
   end
 
   def show

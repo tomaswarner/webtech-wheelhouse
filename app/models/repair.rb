@@ -22,6 +22,18 @@ class Repair < ApplicationRecord
   validate :dates_are_coherent
   validate :hand_back_time_matches_state
 
+  scope :open, -> { where.not(status: :picked_up) }
+  scope :overdue, -> { open.where(promised_on: ...Date.current) }
+  scope :newest_first, -> { order(dropped_off_at: :desc) }
+
+  def overdue?
+    !picked_up? && promised_on < Date.current
+  end
+
+  def total
+    repair_line_items.sum(:price_charged)
+  end
+
   private
 
   def dates_are_coherent

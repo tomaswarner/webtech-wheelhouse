@@ -4,4 +4,6 @@ class ServiceType < ApplicationRecord
 
   validates :name, presence: true, uniqueness: true
   validates :current_price, presence: true, numericality: { greater_than: 0 }
+
+  scope :by_name, -> { order(:name) }
 end

@@ -3,4 +3,6 @@ class StaffMember < ApplicationRecord
 
   validates :name, presence: true
   validates :role, presence: true
+
+  scope :by_name, -> { order(:name) }
 end
