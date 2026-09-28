@@ -2,3 +2,18 @@
 <%= link_to "← Back to staff", staff_members_path %>
 <h1><%= @staff_member.name %></h1>
 <p>Role: <%= @staff_member.role.titleize %></p>
+
+<div class="d-flex gap-2 mb-4">
+  <%= link_to "Edit", edit_staff_member_path(@staff_member), class: "btn btn-outline-primary" %>
+  <%= button_to "Delete", @staff_member, method: :delete, class: "btn btn-outline-danger", form: { data: { turbo_confirm: "Delete staff member #{@staff_member.name}? Their repairs will be left unassigned." } } %>
+</div>
+
+<h2>Repairs</h2>
+<% if @staff_member.repairs.any? %>
+  <table class="table table-striped">
+    <thead><tr><th>Bike</th><th>Customer</th><th>Status</th><th>Promised</th></tr></thead>
+    <tbody><%= render @staff_member.repairs %></tbody>
+  </table>
+<% else %>
+  <p>No repairs assigned to <%= @staff_member.name %>.</p>
+<% end %>

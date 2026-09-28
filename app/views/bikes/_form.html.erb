@@ -1,0 +1,30 @@
+<%= form_with model: bike do |form| %>
+  <%= render "shared/errors", object: bike %>
+
+  <div class="mb-3">
+    <%= form.label :customer_id, class: "form-label" %>
+    <%= form.collection_select :customer_id, customers, :id, :name, { prompt: "Choose the owner" }, class: field_class(form, :customer_id, "form-select") %>
+    <%= field_feedback(form, :customer_id) %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :make, class: "form-label" %>
+    <%= form.text_field :make, class: field_class(form, :make) %>
+    <%= field_feedback(form, :make) %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :model, class: "form-label" %>
+    <%= form.text_field :model, class: field_class(form, :model) %>
+    <%= field_feedback(form, :model) %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :serial_number, class: "form-label" %>
+    <%= form.text_field :serial_number, class: field_class(form, :serial_number) %>
+    <%= field_feedback(form, :serial_number) %>
+  </div>
+
+  <%= form.submit class: "btn btn-primary" %>
+  <%= link_to "Cancel", bike.persisted? ? bike_path(bike) : bikes_path, class: "btn btn-outline-secondary" %>
+<% end %>

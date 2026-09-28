@@ -1,0 +1,18 @@
+<%= form_with model: service_type do |form| %>
+  <%= render "shared/errors", object: service_type %>
+
+  <div class="mb-3">
+    <%= form.label :name, class: "form-label" %>
+    <%= form.text_field :name, class: field_class(form, :name) %>
+    <%= field_feedback(form, :name) %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :current_price, class: "form-label" %>
+    <%= form.number_field :current_price, step: 1, class: field_class(form, :current_price) %>
+    <%= field_feedback(form, :current_price) %>
+  </div>
+
+  <%= form.submit class: "btn btn-primary" %>
+  <%= link_to "Cancel", service_type.persisted? ? service_type_path(service_type) : service_types_path, class: "btn btn-outline-secondary" %>
+<% end %>

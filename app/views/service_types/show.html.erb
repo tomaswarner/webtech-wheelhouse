@@ -1,4 +1,9 @@
-<% provide(:title, @service.name) %>
-<%= link_to "← Back to services", services_path %>
-<h1><%= @service.name %></h1>
-<p>Price: $<%= @service.current_price.to_i %></p>
+<% provide(:title, @service_type.name) %>
+<%= link_to "← Back to services", service_types_path %>
+<h1><%= @service_type.name %></h1>
+<p>Price: $<%= @service_type.current_price.to_i %></p>
+
+<div class="d-flex gap-2 mb-4">
+  <%= link_to "Edit", edit_service_type_path(@service_type), class: "btn btn-outline-primary" %>
+  <%= button_to "Delete", @service_type, method: :delete, class: "btn btn-outline-danger", form: { data: { turbo_confirm: "Delete service #{@service_type.name}? This can't be undone." } } %>
+</div>

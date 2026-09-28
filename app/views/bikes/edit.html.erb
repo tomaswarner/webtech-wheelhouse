@@ -1,0 +1,3 @@
+<% provide(:title, "Edit bike #{@bike.serial_number_was}") %>
+<h1>Edit bike <%= @bike.serial_number_was %></h1>
+<%= render "form", bike: @bike, customers: @customers %>

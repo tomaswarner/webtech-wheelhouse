@@ -5,4 +5,5 @@ class StaffMember < ApplicationRecord
   validates :role, presence: true
 
   scope :by_name, -> { order(:name) }
+  scope :mechanics, -> { where(role: "mechanic") }
 end

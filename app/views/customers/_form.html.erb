@@ -1,0 +1,18 @@
+<%= form_with model: customer do |form| %>
+  <%= render "shared/errors", object: customer %>
+
+  <div class="mb-3">
+    <%= form.label :name, class: "form-label" %>
+    <%= form.text_field :name, class: field_class(form, :name) %>
+    <%= field_feedback(form, :name) %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :phone, class: "form-label" %>
+    <%= form.telephone_field :phone, class: field_class(form, :phone) %>
+    <%= field_feedback(form, :phone) %>
+  </div>
+
+  <%= form.submit class: "btn btn-primary" %>
+  <%= link_to "Cancel", customer.persisted? ? customer_path(customer) : customers_path, class: "btn btn-outline-secondary" %>
+<% end %>

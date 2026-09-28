@@ -10,6 +10,10 @@ class Bike < ApplicationRecord
 
   scope :by_make_and_model, -> { order(:make, :model) }
 
+  def display_name
+    "#{make} #{model} (#{serial_number}), #{customer.name}"
+  end
+
   private
 
   def normalize_serial_number

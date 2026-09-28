@@ -1,14 +1,20 @@
 <% provide(:title, "Repair ##{@repair.id}") %>
 <%= link_to "← Back to repairs", repairs_path %>
 <h1>Repair #<%= @repair.id %></h1>
-<p>Bike: <%= link_to "#{@repair.bike.make} #{@repair.bike.model}", @repair.bike %></p>
+<p>Bike: <%= link_to "#{@repair.bike.make} #{@repair.bike.model} (#{@repair.bike.serial_number})", @repair.bike %></p>
 <p>Customer: <%= link_to @repair.customer.name, @repair.customer %></p>
-<p>Status: <%= @repair.status.titleize %></p>
+<p>Mechanic: <%= @repair.staff_member ? link_to(@repair.staff_member.name, @repair.staff_member) : "Unassigned" %></p>
+<p>Status: <%= @repair.status.humanize %></p>
 <p>Promised: <%= @repair.promised_on.strftime("%b %d, %Y") %></p>
 <p>Dropped off: <%= @repair.dropped_off_at.strftime("%b %d, %Y %I:%M %p") %></p>
 <% if @repair.picked_up_at %>
   <p>Picked up: <%= @repair.picked_up_at.strftime("%b %d, %Y %I:%M %p") %></p>
 <% end %>
+
+<div class="d-flex gap-2 mb-4">
+  <%= link_to "Edit", edit_repair_path(@repair), class: "btn btn-outline-primary" %>
+  <%= button_to "Delete", @repair, method: :delete, class: "btn btn-outline-danger", form: { data: { turbo_confirm: "Delete repair #{@repair}? Its services go with it." } } %>
+</div>
 
 <h2>Services charged</h2>
 <% if @repair.repair_line_items.any? %>
@@ -17,13 +23,13 @@
     <tbody>
       <% @repair.repair_line_items.each do |item| %>
         <tr>
-          <td><%= link_to item.service_type.name, service_path(item.service_type) %></td>
+          <td><%= link_to item.service_type.name, item.service_type %></td>
           <td>$<%= item.price_charged.to_i %></td>
         </tr>
       <% end %>
     </tbody>
     <tfoot>
-      <tr><th>Total</th><th>$<%= @repair.repair_line_items.sum(:price_charged).to_i %></th></tr>
+      <tr><th>Total</th><th>$<%= @repair.repair_line_items.sum(&:price_charged).to_i %></th></tr>
     </tfoot>
   </table>
 <% else %>

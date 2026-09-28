@@ -5,6 +5,10 @@ class Repair < ApplicationRecord
   has_many :repair_line_items, dependent: :destroy
   has_many :service_types, through: :repair_line_items
 
+  accepts_nested_attributes_for :repair_line_items,
+    allow_destroy: true,
+    reject_if: ->(attributes) { attributes["service_type_id"].blank? }
+
   enum :status, {
     dropped_off: "dropped_off",
     diagnosing: "diagnosing",
@@ -13,7 +17,9 @@ class Repair < ApplicationRecord
     declined: "declined",
     ready: "ready",
     picked_up: "picked_up"
-  }
+  }, validate: true
+
+  before_validation :take_customer_from_bike
 
   validates :status, presence: true
   validates :promised_on, presence: true
@@ -34,7 +40,15 @@ class Repair < ApplicationRecord
     repair_line_items.sum(:price_charged)
   end
 
+  def to_s
+    "##{id} (#{bike.make} #{bike.model}, #{bike.serial_number})"
+  end
+
   private
+
+  def take_customer_from_bike
+    self.customer = bike.customer if bike && (customer.nil? || bike_id_changed?)
+  end
 
   def dates_are_coherent
     return if dropped_off_at.blank?

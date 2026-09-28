@@ -1,0 +1,18 @@
+<%= form_with model: staff_member do |form| %>
+  <%= render "shared/errors", object: staff_member %>
+
+  <div class="mb-3">
+    <%= form.label :name, class: "form-label" %>
+    <%= form.text_field :name, class: field_class(form, :name) %>
+    <%= field_feedback(form, :name) %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :role, class: "form-label" %>
+    <%= form.text_field :role, class: field_class(form, :role) %>
+    <%= field_feedback(form, :role) %>
+  </div>
+
+  <%= form.submit class: "btn btn-primary" %>
+  <%= link_to "Cancel", staff_member.persisted? ? staff_member_path(staff_member) : staff_members_path, class: "btn btn-outline-secondary" %>
+<% end %>

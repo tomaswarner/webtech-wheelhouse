@@ -64,7 +64,7 @@ first.
 
     bin/dev
 
-then open http://localhost:3000 — the services page should show the full price list from the
+then open http://localhost:3000, the services page should show the full price list from the
 database.
 
 `bin/rails server` also starts the app, but it won't rebuild the bootstrap css if you change it, so
@@ -72,9 +72,25 @@ use `bin/dev` instead.
 
 ## what's here so far
 
-this is lab 5. the schema now exists as migrations in `db/migrate/`, one model per table in
-`app/models/`, and `db/seeds.rb` fills it with a workshop worth looking at. the services page reads
-its data from the database instead of a hardcoded array.
+this is lab 8. every record can be created, edited and deleted from the browser: customers, bikes,
+repairs, services and staff all have the seven restful actions, one form partial each, strong
+parameters, a flash after every write and a 422 with the errors next to the field when a save is
+refused.
 
-no associations, no validations, no forms yet — that starts in lab 7. `notes` and `photos` aren't in
-the schema yet either, they arrive in lab 9.
+a few decisions worth knowing about:
+
+a new repair comes with 3 empty service lines, which covers almost every visit (the seed has at
+most 4). editing a repair always adds 1 more empty line, so to add more you save and edit again. no
+javascript needed. a line left on "no service" is ignored, and an existing line has a remove box.
+
+the repair form doesn't ask for the customer. the customer is whoever owns the bike, so the model
+copies it from the bike when the repair is saved or the bike changes. asking for both would let
+them disagree.
+
+the mechanic select only offers staff whose role is mechanic, and can be left on unassigned.
+
+deleting a customer who still has bikes, or a service that has already been charged, is refused and
+the page says why. deleting a bike takes its repairs with it, and deleting a staff member leaves
+their repairs unassigned.
+
+`notes` and `photos` aren't in the schema yet, they arrive in lab 9.

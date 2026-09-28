@@ -1,4 +1,8 @@
-<h1>Bikes</h1>
+<% provide(:title, "Bikes") %>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="mb-0">Bikes</h1>
+  <%= link_to "New bike", new_bike_path, class: "btn btn-primary" %>
+</div>
 <% if @bikes.any? %>
   <table class="table table-striped">
     <thead><tr><th>Bike</th><th>Serial</th><th>Owner</th></tr></thead>

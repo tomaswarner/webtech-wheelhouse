@@ -1,0 +1,20 @@
+<div class="row g-2 align-items-start mb-2">
+  <div class="col-md-6">
+    <%= line.label :service_type_id, "Service", class: "form-label small" %>
+    <%= line.collection_select :service_type_id, service_types, :id, :name, { include_blank: "No service" }, class: field_class(line, :service_type_id, "form-select") %>
+    <%= field_feedback(line, :service_type_id) %>
+  </div>
+  <div class="col-md-4">
+    <%= line.label :price_charged, class: "form-label small" %>
+    <%= line.number_field :price_charged, step: 1, class: field_class(line, :price_charged) %>
+    <%= field_feedback(line, :price_charged) %>
+  </div>
+  <div class="col-md-2 pt-md-4">
+    <% if line.object.persisted? %>
+      <div class="form-check mt-md-2">
+        <%= line.check_box :_destroy, class: "form-check-input" %>
+        <%= line.label :_destroy, "Remove", class: "form-check-label" %>
+      </div>
+    <% end %>
+  </div>
+</div>

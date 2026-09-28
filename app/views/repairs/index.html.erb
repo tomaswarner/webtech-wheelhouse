@@ -1,4 +1,8 @@
-<h1>Repairs</h1>
+<% provide(:title, "Repairs") %>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="mb-0">Repairs</h1>
+  <%= link_to "Take in a repair", new_repair_path, class: "btn btn-primary" %>
+</div>
 <% if @repairs.any? %>
   <table class="table table-striped">
     <thead><tr><th>Bike</th><th>Customer</th><th>Status</th><th>Promised</th></tr></thead>
