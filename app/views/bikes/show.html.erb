@@ -13,10 +13,10 @@
   <h2 class="mb-0">Repairs</h2>
   <%= link_to "Take in a repair", new_repair_path(bike_id: @bike.id), class: "btn btn-sm btn-primary" %>
 </div>
-<% if @bike.repairs.any? %>
+<% if @repairs.any? %>
   <table class="table table-striped">
-    <thead><tr><th>Bike</th><th>Customer</th><th>Status</th><th>Promised</th></tr></thead>
-    <tbody><%= render @bike.repairs %></tbody>
+    <thead><tr><th>Photo</th><th>Bike</th><th>Customer</th><th>Status</th><th>Promised</th><th>Diagnosis</th></tr></thead>
+    <tbody><%= render @repairs %></tbody>
   </table>
 <% else %>
   <p>This bike has never been in for a repair.</p>

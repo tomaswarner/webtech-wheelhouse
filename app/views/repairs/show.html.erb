@@ -16,7 +16,17 @@
   <%= button_to "Delete", @repair, method: :delete, class: "btn btn-outline-danger", form: { data: { turbo_confirm: "Delete repair #{@repair}? Its services go with it." } } %>
 </div>
 
-<h2>Services charged</h2>
+<h2>Diagnosis</h2>
+<% if @repair.diagnosis.present? %>
+  <%= @repair.diagnosis %>
+<% else %>
+  <p>No diagnosis has been written for this repair yet.</p>
+<% end %>
+
+<h2>Intake photos</h2>
+<%= render "photos", repair: @repair, removable: true %>
+
+<h2 class="mt-4">Services charged</h2>
 <% if @repair.repair_line_items.any? %>
   <table class="table table-striped">
     <thead><tr><th>Service</th><th>Price charged</th></tr></thead>

@@ -6,7 +6,7 @@ class RepairsController < ApplicationController
   before_action :load_choices, only: [:new, :create, :edit, :update]
 
   def index
-    @repairs = Repair.newest_first.includes(:bike, :customer)
+    @repairs = Repair.newest_first.includes(:bike, :customer).with_attached_intake_photos.with_rich_text_diagnosis
   end
 
   def show
@@ -18,7 +18,8 @@ class RepairsController < ApplicationController
   end
 
   def create
-    @repair = Repair.new(repair_params)
+    @repair = Repair.new(repair_params.except(:intake_photos))
+    @repair.add_intake_photos(repair_params[:intake_photos])
     if @repair.save
       redirect_to @repair, notice: "Repair #{@repair} was taken in."
     else
@@ -32,7 +33,9 @@ class RepairsController < ApplicationController
   end
 
   def update
-    if @repair.update(repair_params)
+    @repair.assign_attributes(repair_params.except(:intake_photos))
+    @repair.add_intake_photos(repair_params[:intake_photos])
+    if @repair.save
       redirect_to @repair, notice: "Repair #{@repair} was updated."
     else
       add_blank_lines(EXTRA_LINES)
@@ -51,7 +54,7 @@ class RepairsController < ApplicationController
   private
 
   def set_repair
-    @repair = Repair.includes(:customer, :staff_member, bike: :customer, repair_line_items: :service_type).find(params[:id])
+    @repair = Repair.with_attached_intake_photos.with_rich_text_diagnosis.includes(:customer, :staff_member, bike: :customer, repair_line_items: :service_type).find(params[:id])
   end
 
   def load_choices
@@ -66,7 +69,8 @@ class RepairsController < ApplicationController
 
   def repair_params
     params.expect(repair: [
-      :bike_id, :staff_member_id, :status, :dropped_off_at, :promised_on, :picked_up_at,
+      :bike_id, :staff_member_id, :status, :dropped_off_at, :promised_on, :picked_up_at, :diagnosis,
+      intake_photos: [],
       repair_line_items_attributes: [[:id, :service_type_id, :price_charged, :_destroy]]
     ])
   end

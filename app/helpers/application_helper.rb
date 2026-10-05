@@ -23,6 +23,28 @@ module ApplicationHelper
     tag.div(safe_join(messages, tag.br), class: "invalid-feedback")
   end
 
+  def intake_photo_alt(repair, position, total)
+    "Intake photo #{position} of #{total}: #{repair.bike.make} #{repair.bike.model}, repair ##{repair.id}"
+  end
+
+  def intake_thumbnail(repair)
+    width, height = Repair::THUMBNAIL_SIZE
+    photo = repair.saved_intake_photos.first
+
+    if photo
+      image_tag photo.variant(:thumb),
+        alt: intake_photo_alt(repair, 1, repair.saved_intake_photos.size),
+        width: width, height: height, class: "d-block"
+    else
+      tag.div(tag.i(class: "bi bi-image"), class: "d-flex align-items-center justify-content-center bg-body-secondary text-secondary",
+        style: "width: #{width}px; height: #{height}px;", role: "img", aria: { label: "No intake photos" })
+    end
+  end
+
+  def diagnosis_excerpt(repair)
+    repair.diagnosis.to_plain_text.squish.truncate(60)
+  end
+
   def status_choices
     Repair.statuses.keys.map { |status| [status.humanize, status] }
   end

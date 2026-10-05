@@ -1,0 +1,22 @@
+<%# Intake photos of a repair. With removable: true each one gets its own remove button. %>
+<% photos = repair.saved_intake_photos %>
+<% if photos.any? %>
+  <div class="row g-3">
+    <% photos.each_with_index do |photo, index| %>
+      <div class="col-6 col-md-4 col-lg-3">
+        <figure class="figure mb-0">
+          <%= link_to url_for(photo), title: "Open #{photo.filename} in full size" do %>
+            <%= image_tag photo.variant(:large), alt: intake_photo_alt(repair, index + 1, photos.size), class: "figure-img img-fluid mb-1" %>
+          <% end %>
+          <% if removable %>
+            <%= button_to "Remove", repair_intake_photo_path(repair, photo), method: :delete,
+              class: "btn btn-sm btn-outline-danger",
+              form: { data: { turbo_confirm: "Remove this photo from repair #{repair}?" } } %>
+          <% end %>
+        </figure>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <p>No intake photos were taken for this repair.</p>
+<% end %>

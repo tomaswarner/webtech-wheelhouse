@@ -1,4 +1,9 @@
 # Wipe everything so running this file twice leaves the same row counts.
+# Active Storage and Action Text first: delete_all below skips their callbacks.
+ActiveStorage::Attachment.find_each(&:purge)
+ActiveStorage::VariantRecord.delete_all
+ActiveStorage::Blob.find_each(&:purge)
+ActionText::RichText.delete_all
 RepairLineItem.delete_all
 Repair.delete_all
 Bike.delete_all
@@ -250,6 +255,64 @@ add_service(r16, services["Suspension fork service"])
 
 # josepedro (bike12) is left with no repairs at all on purpose.
 
+# --- Intake photos and diagnoses ------------------------------------------
+# The pictures in db/seeds/ are CC0 photos from Wikimedia Commons. The same file can
+# be attached to several repairs. r1 (just taken in), r4 and r9 have no photos;
+# r1 has no diagnosis either.
+
+def attach_photos(repair, *names)
+  names.each do |name|
+    path = Rails.root.join("db/seeds", name)
+    repair.intake_photos.attach(
+      io: File.open(path), filename: name, content_type: Marcel::MimeType.for(path)
+    )
+  end
+end
+
+# One bike, one picture: repairs of the same bike share its photo, different bikes never do.
+# r5 has four photos because its bike (the red road bike) has a side shot and three details.
+photos = {
+  r2  => %w[bike-city-blue-side.jpg],
+  r3  => %w[bike-red-basket.jpg],
+  r5  => %w[bike-road-red-side.jpg bike-road-red-cockpit.jpg bike-road-red-drivetrain.jpg bike-road-red-frame.jpg],
+  r6  => %w[bike-purple-road.jpg],
+  r7  => %w[bike-fixie-tokyo.jpg],
+  r8  => %w[bike-hybrid-green-side.jpg],
+  r10 => %w[bike-white-city.jpg],
+  r11 => %w[bike-black-secured.jpg],
+  r12 => %w[bike-white-roadmaster.jpg],
+  r13 => %w[bike-city-blue-side.jpg],
+  r14 => %w[bike-road-red-side.jpg],
+  r15 => %w[bike-purple-road.jpg],
+  r16 => %w[bike-fixie-tokyo.jpg]
+}
+photos.each { |repair, names| attach_photos(repair, *names) }
+
+# Make both sizes now so the first page load doesn't wait on (or time out for) the image processing.
+Repair.with_attached_intake_photos.find_each do |repair|
+  repair.intake_photos.each do |photo|
+    photo.variant(:thumb).processed
+    photo.variant(:large).processed
+  end
+end
+
+diagnoses = {
+  r2  => "<div>Brakes <strong>squeal</strong> and the drivetrain is dry. Needs:<ul><li>Brake bleed</li><li>Full tune-up</li></ul></div>",
+  r3  => "<div>Housing is <strong>cracked</strong> near the head tube.<ul><li>New housing</li><li>New cables</li></ul>Quote sent by phone.</div>",
+  r4  => "<div><strong>Bent</strong> derailleur hanger. <em>Customer declined</em> the repair.<blockquote>Too expensive for this bike.</blockquote></div>",
+  r5  => "<div>Chain is <strong>stretched</strong> past 0.75%.<ul><li>Replace chain</li><li>Adjust rear derailleur</li><li>Check cassette wear</li></ul></div>",
+  r6  => "<div>Rear wheel out of true by <strong>4 mm</strong>.<ul><li>True wheel</li><li>Bleed brakes</li></ul>Ready for pickup.</div>",
+  r8  => "<div>Annual service. <strong>Everything else</strong> is in good shape:<ul><li>Tune-up</li></ul></div>",
+  r9  => "<div>Old tune-up, billed at the <strong>previous</strong> price list.<ul><li>Tune-up</li><li>Wheel true</li></ul></div>",
+  r10 => "<div>Bottom bracket <strong>creaks</strong> and the headset has play.<ul><li>Bottom bracket service</li><li>Headset overhaul</li><li>Two broken spokes</li><li>New chain</li></ul></div>",
+  r11 => "<div>Pads are <strong>glazed</strong>, rotor is fine.<ul><li>Replace disc brake pads</li></ul></div>",
+  r12 => "<div>Front wheel is <strong>beyond repair</strong>.<ul><li>Replace wheel</li><li>Re-check brake alignment</li></ul>Link: <a href=\"https://www.example.com/wheels\">wheel model</a></div>",
+  r13 => "<div>Just a <strong>wash</strong> and lube after the trip.<ul><li>Lubrication</li><li>Full bike wash</li></ul></div>",
+  r14 => "<div>Pedal axle <strong>stripped</strong>, saddle rails cracked.<ul><li>New pedals</li><li>New saddle</li></ul></div>"
+}
+diagnoses.each { |repair, html| repair.update!(diagnosis: html) }
+
 puts "Seeded #{ServiceType.count} services, #{StaffMember.count} staff, " \
      "#{Customer.count} customers, #{Bike.count} bikes, " \
-     "#{Repair.count} repairs, #{RepairLineItem.count} line items."
+     "#{Repair.count} repairs, #{RepairLineItem.count} line items, " \
+     "#{ActiveStorage::Attachment.where(record_type: "Repair").count} photos, #{ActionText::RichText.count} diagnoses."

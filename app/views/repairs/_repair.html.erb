@@ -1,6 +1,8 @@
 <tr class="<%= 'table-danger' if repair.overdue? %>">
-  <td><%= link_to "#{repair.bike.make} #{repair.bike.model}", repair %></td>
-  <td><%= link_to repair.customer.name, repair.customer %></td>
-  <td><%= repair.status.titleize %></td>
-  <td><%= repair.promised_on.strftime("%b %d, %Y") %></td>
+  <td class="align-middle"><%= intake_thumbnail(repair) %></td>
+  <td class="align-middle"><%= link_to "#{repair.bike.make} #{repair.bike.model}", repair %></td>
+  <td class="align-middle"><%= link_to repair.customer.name, repair.customer %></td>
+  <td class="align-middle"><%= repair.status.titleize %></td>
+  <td class="align-middle"><%= repair.promised_on.strftime("%b %d, %Y") %></td>
+  <td class="align-middle text-truncate" style="max-width: 16rem;"><%= diagnosis_excerpt(repair) %></td>
 </tr>

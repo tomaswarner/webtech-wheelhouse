@@ -1,3 +1,7 @@
 <% provide(:title, "Edit repair ##{@repair.id}") %>
 <h1>Edit repair #<%= @repair.id %></h1>
+<% if @repair.saved_intake_photos.any? %>
+  <h2 class="h5">Current intake photos</h2>
+  <div class="mb-4"><%= render "photos", repair: @repair, removable: true %></div>
+<% end %>
 <%= render "form", repair: @repair, bikes: @bikes, mechanics: @mechanics, service_types: @service_types %>

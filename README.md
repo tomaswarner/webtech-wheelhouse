@@ -33,9 +33,13 @@ ruby 4.0.4
 
 rails 8.0
 
-node 26.1.0 or newer, with yarn
+node 26.7.0 or newer (see `.node-version`), with yarn
 
-postgresql running locally, with a role that can create databases
+postgresql running locally (on macos `brew services start postgresql@17`), with a role that can create
+databases. on debian or ubuntu create it first: `sudo -u postgres createuser --superuser $USER`
+
+libvips, which makes the photo thumbnails. on macos `brew install vips`, on debian or ubuntu
+`sudo apt install libvips42` (`libvips42t64` on recent releases, or `libvips-dev`). check it with `vips --version`.
 
 ## setup
 
@@ -52,6 +56,10 @@ install js packages
 
     yarn install
 
+build the css (it is not committed)
+
+    yarn build:css
+
 create the databases, load the schema and seed it
 
     bin/rails db:setup
@@ -64,18 +72,37 @@ first.
 
     bin/dev
 
-then open http://localhost:3000, the services page should show the full price list from the
-database.
+then open http://localhost:3000. the repairs page (http://localhost:3000/repairs) should show a
+thumbnail and the start of the diagnosis on every row; the services page shows the price list.
+
+`bin/dev` installs foreman the first time it runs; leave it running and stop it with ctrl+c.
 
 `bin/rails server` also starts the app, but it won't rebuild the bootstrap css if you change it, so
 use `bin/dev` instead.
 
 ## what's here so far
 
-this is lab 8. every record can be created, edited and deleted from the browser: customers, bikes,
-repairs, services and staff all have the seven restful actions, one form partial each, strong
-parameters, a flash after every write and a 422 with the errors next to the field when a save is
-refused.
+this is lab 9. every record can be created, edited and deleted from the browser (lab 8), and now a
+repair also carries intake photos and a diagnosis.
+
+photos use active storage, stored in the `storage/` folder (not committed). the seed attaches the
+photos in `db/seeds/` (CC0, from Wikimedia Commons) to most repairs: one bike, one picture, and the three detail shots of the red road bike are crops of its side photo. a repair has any number of photos, chosen in the repair
+form (several at once). only jpeg, png and webp are accepted, up to 10 MB each, checked in the
+model; if any file of a request is refused nothing from that request is attached, the page comes
+back with a 422 and the message under the file field names the file. photos chosen when editing
+are added to the existing ones, and each one has its own remove button (with confirmation) on the
+repair's page and its edit page. lists show a 96x72 cropped thumbnail of the first photo, the
+repair's page shows an 800x600 version that links to the original. both sizes are named variants
+in `app/models/repair.rb`.
+
+the diagnosis is action text (trix editor), printed through action text's own sanitizer. rows in
+lists show its first 60 characters as plain text.
+
+the repairs index, the bike's page and the repair's page run the same number of queries however
+many repairs or photos there are, preloaded in the controllers.
+
+`bin/rails db:seed` can be run as many times as you like: it first removes the previous files and
+rows, so every table ends with the same count.
 
 a few decisions worth knowing about:
 
@@ -92,5 +119,3 @@ the mechanic select only offers staff whose role is mechanic, and can be left on
 deleting a customer who still has bikes, or a service that has already been charged, is refused and
 the page says why. deleting a bike takes its repairs with it, and deleting a staff member leaves
 their repairs unassigned.
-
-`notes` and `photos` aren't in the schema yet, they arrive in lab 9.

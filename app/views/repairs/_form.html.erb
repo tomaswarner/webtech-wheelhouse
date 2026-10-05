@@ -41,6 +41,20 @@
     </div>
   </div>
 
+  <div class="mb-3">
+    <%= form.label :intake_photos, "Intake photos", class: "form-label" %>
+    <%= form.file_field :intake_photos, multiple: true, accept: Repair::PHOTO_TYPES.join(","), class: field_class(form, :intake_photos) %>
+    <%= field_feedback(form, :intake_photos) %>
+    <div class="form-text">JPEG, PNG or WebP, up to <%= Repair::MAX_PHOTO_SIZE / 1.megabyte %> MB each. New photos are added to the ones the repair already has. If the form comes back with an error, choose the files again.</div>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :diagnosis, class: "form-label" %>
+    <%= form.rich_text_area :diagnosis, class: field_class(form, :diagnosis, "trix-content") %>
+    <%= field_feedback(form, :diagnosis) %>
+    <div class="form-text">Optional.</div>
+  </div>
+
   <h2 class="h5 mt-2">Services</h2>
   <p class="form-text">Lines left on "No service" are ignored. Save and edit again to get another empty line.</p>
   <%= form.fields_for :repair_line_items do |line| %>
