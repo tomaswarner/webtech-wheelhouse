@@ -129,8 +129,7 @@ https://tomaswarner.github.io/webtech-lab-01/ (repository
 the page looks for the api at `http://localhost:3000`, so the api has to run on **port 3000**, which
 is what `bin/dev` uses. the api only answers browsers on two origins: that published page and
 `http://localhost:5500`, where the page is served while developing it, for example from the
-page's folder with `python3 -m http.server 5500`. use chrome or firefox: safari blocks a page on
-https from reading `http://localhost`.
+page's folder with `python3 -m http.server 5500`.
 
 ## what's here so far
 
