@@ -27,6 +27,8 @@ website visitor just looks at the public price list
 
 [wireframes](docs/wireframes.md) low fidelity screens and the navigation graph
 
+[api](docs/api.md) the json api: routes, documents, status codes and the decisions behind them
+
 ## prerequisites
 
 ruby 4.0.4
@@ -60,6 +62,22 @@ build the css (it is not committed)
 
     yarn build:css
 
+set the api token. it lives in the encrypted credentials, and the key that opens the committed
+`config/credentials.yml.enc` is not in the repository (`config/master.key` is never committed), so
+on a fresh clone make your own: delete the file, then create it again
+
+    rm config/credentials.yml.enc
+    EDITOR=nano bin/rails credentials:edit
+
+the editor opens with a template. add one line with a long random value, save and close
+
+    api_token: paste-the-output-of-openssl-rand-hex-32-here
+
+`openssl rand -hex 32` prints a good value. rails writes `config/master.key` next to the credentials;
+keep it out of git (it is already ignored). to see the token again when you need it
+
+    bin/rails runner 'puts Rails.application.credentials.api_token'
+
 create the databases, load the schema and seed it
 
     bin/rails db:setup
@@ -80,10 +98,45 @@ thumbnail and the start of the diagnosis on every row; the services page shows t
 `bin/rails server` also starts the app, but it won't rebuild the bootstrap css if you change it, so
 use `bin/dev` instead.
 
+## the api
+
+lab 10 adds a json api under `/api/v1` for the shop's website and the accounting program. the
+routes, the shape of every document and the decisions are in [docs/api.md](docs/api.md).
+
+reading the price list is public. reading repairs and registering a service need the token, sent as
+`Authorization: Bearer <token>`.
+
+with the app running (`bin/dev`), from another terminal
+
+    curl http://localhost:3000/api/v1/services
+
+    curl -H "Authorization: Bearer $(bin/rails runner 'puts Rails.application.credentials.api_token')" \
+      "http://localhost:3000/api/v1/repairs?state=ready"
+
+and to register a service
+
+    curl -X POST http://localhost:3000/api/v1/services \
+      -H "Authorization: Bearer $(bin/rails runner 'puts Rails.application.credentials.api_token')" \
+      -H "Content-Type: application/json" \
+      -d '{"name": "Fender install", "price": "6500"}'
+
+### the price list on the website
+
+the price list is read by a section of my personal page, published at
+https://tomaswarner.github.io/webtech-lab-01/ (repository
+[webtech-lab-01](https://github.com/tomaswarner/webtech-lab-01)).
+
+the page looks for the api at `http://localhost:3000`, so the api has to run on **port 3000**, which
+is what `bin/dev` uses. the api only answers browsers on two origins: that published page and
+`http://localhost:5500`, where the page is served while developing it, for example from the
+page's folder with `python3 -m http.server 5500`. use chrome or firefox: safari blocks a page on
+https from reading `http://localhost`.
+
 ## what's here so far
 
-this is lab 9. every record can be created, edited and deleted from the browser (lab 8), and now a
-repair also carries intake photos and a diagnosis.
+this is lab 10. every record can be created, edited and deleted from the browser (lab 8), a repair
+carries intake photos and a diagnosis (lab 9), and the price list and the repairs can be read as json
+(lab 10).
 
 photos use active storage, stored in the `storage/` folder (not committed). the seed attaches the
 photos in `db/seeds/` (CC0, from Wikimedia Commons) to most repairs: one bike, one picture, and the three detail shots of the red road bike are crops of its side photo. a repair has any number of photos, chosen in the repair
