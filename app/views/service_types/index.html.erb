@@ -1,7 +1,9 @@
 <% provide(:title, "Services") %>
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h1 class="mb-0">Services</h1>
-  <%= link_to "New service", new_service_type_path, class: "btn btn-primary" %>
+  <% if authenticated? %>
+    <%= link_to "New service", new_service_type_path, class: "btn btn-primary" %>
+  <% end %>
 </div>
 <p>We charge by the job, not by the hour. Here's the full list.</p>
 <% if @service_types.any? %>

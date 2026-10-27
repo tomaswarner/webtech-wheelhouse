@@ -6,6 +6,8 @@ ActiveStorage::Blob.find_each(&:purge)
 ActionText::RichText.delete_all
 RepairLineItem.delete_all
 Repair.delete_all
+Session.delete_all
+User.delete_all
 Bike.delete_all
 ServiceType.delete_all
 StaffMember.delete_all
@@ -46,6 +48,18 @@ pedro   = StaffMember.create!(name: "Pedro Soto", role: "mechanic")
 ana     = StaffMember.create!(name: "Ana Muñoz", role: "mechanic")
 felipe  = StaffMember.create!(name: "Felipe Rojas", role: "mechanic")
 camila_staff = StaffMember.create!(name: "Camila Fuentes", role: "counter")
+jorge   = StaffMember.create!(name: "Jorge Fuentes", role: "owner")
+
+# --- Accounts ----------------------------------------------------------------
+# One per member of the staff, joined to them, and one that belongs to nobody
+# and keeps the default role. Development only: the passwords are in the README.
+
+jorge_user  = User.create!(email_address: "jorge@wheelhouse.cl",  password: "owner-keys-2026",   role: "owner",    staff_member: jorge)
+camila_user = User.create!(email_address: "camila@wheelhouse.cl", password: "counter-desk-2026", role: "counter",  staff_member: camila_staff)
+pedro_user  = User.create!(email_address: "pedro@wheelhouse.cl",  password: "pedro-wrench-2026", role: "mechanic", staff_member: pedro)
+ana_user    = User.create!(email_address: "ana@wheelhouse.cl",    password: "ana-spokes-2026",   role: "mechanic", staff_member: ana)
+felipe_user = User.create!(email_address: "felipe@wheelhouse.cl", password: "felipe-chain-2026", role: "mechanic", staff_member: felipe)
+User.create!(email_address: "spare@wheelhouse.cl", password: "spare-account-2026")
 
 # --- Customers -----------------------------------------------------------
 
@@ -79,6 +93,8 @@ bike11 = Bike.create!(customer_id: justo.id,     make: "Cube",        model: "At
 bike12 = Bike.create!(customer_id: josepedro.id, make: "Orbea",       model: "Avant",        serial_number: "WH-1012")
 
 # --- Repairs ---------------------------------------------------------------
+# taken_in_by is the account that took the repair in. r8 and r9 are from before
+# there were accounts, so they record nobody.
 
 def add_service(repair, service, price_charged: nil)
   RepairLineItem.create!(
@@ -93,7 +109,7 @@ end
 #    intentional exception to "every repair has 1-4 services" (see
 #    docs/domain-model.md, lifecycle notes).
 r1 = Repair.create!(
-  bike_id: bike1.id, customer_id: eduardo.id,
+  bike_id: bike1.id, customer_id: eduardo.id, taken_in_by: camila_user,
   status: "dropped_off",
   dropped_off_at: Time.current,
   promised_on: 2.days.from_now.to_date
@@ -101,7 +117,7 @@ r1 = Repair.create!(
 
 # 2. Being examined right now.
 r2 = Repair.create!(
-  bike_id: bike2.id, customer_id: eduardo.id, staff_member_id: pedro.id,
+  bike_id: bike2.id, customer_id: eduardo.id, staff_member_id: pedro.id, taken_in_by: camila_user,
   status: "diagnosing",
   dropped_off_at: 1.day.ago,
   promised_on: 1.day.from_now.to_date
@@ -111,7 +127,7 @@ add_service(r2, services["Brake bleed"])
 
 # 3. Quoted, waiting on the customer.
 r3 = Repair.create!(
-  bike_id: bike3.id, customer_id: paloma.id, staff_member_id: ana.id,
+  bike_id: bike3.id, customer_id: paloma.id, staff_member_id: ana.id, taken_in_by: jorge_user,
   status: "awaiting_approval",
   dropped_off_at: 2.days.ago,
   promised_on: 3.days.from_now.to_date
@@ -121,7 +137,7 @@ add_service(r3, services["Cable replacement"])
 
 # 4. Customer said no.
 r4 = Repair.create!(
-  bike_id: bike4.id, customer_id: tomas.id, staff_member_id: felipe.id,
+  bike_id: bike4.id, customer_id: tomas.id, staff_member_id: felipe.id, taken_in_by: camila_user,
   status: "declined",
   dropped_off_at: 4.days.ago,
   promised_on: 1.day.ago.to_date
@@ -129,7 +145,7 @@ r4 = Repair.create!(
 
 # 5. Approved, work underway.
 r5 = Repair.create!(
-  bike_id: bike5.id, customer_id: andres.id, staff_member_id: pedro.id,
+  bike_id: bike5.id, customer_id: andres.id, staff_member_id: pedro.id, taken_in_by: pedro_user,
   status: "in_progress",
   dropped_off_at: 2.days.ago,
   promised_on: 1.day.from_now.to_date
@@ -140,7 +156,7 @@ add_service(r5, services["Derailleur adjustment"])
 # 6. Ready, but the promised day has already passed and it hasn't been
 #    picked up. This is the overdue case.
 r6 = Repair.create!(
-  bike_id: bike6.id, customer_id: ignacio.id, staff_member_id: ana.id,
+  bike_id: bike6.id, customer_id: ignacio.id, staff_member_id: ana.id, taken_in_by: camila_user,
   status: "ready",
   dropped_off_at: 6.days.ago,
   promised_on: 1.day.ago.to_date
@@ -150,7 +166,7 @@ add_service(r6, services["Brake bleed"])
 
 # 7. Same-day in and out: a flat tyre.
 r7 = Repair.create!(
-  bike_id: bike7.id, customer_id: isidora.id, staff_member_id: felipe.id,
+  bike_id: bike7.id, customer_id: isidora.id, staff_member_id: felipe.id, taken_in_by: camila_user,
   status: "picked_up",
   dropped_off_at: Time.current.beginning_of_day + 9.hours,
   promised_on: Date.current,
@@ -183,7 +199,7 @@ add_service(r9, services["Wheel true"], price_charged: 5000)
 
 # 10. Picked up, four jobs on one visit.
 r10 = Repair.create!(
-  bike_id: bike9.id, customer_id: fernando.id, staff_member_id: felipe.id,
+  bike_id: bike9.id, customer_id: fernando.id, staff_member_id: felipe.id, taken_in_by: jorge_user,
   status: "picked_up",
   dropped_off_at: 10.days.ago,
   promised_on: 9.days.ago.to_date,
@@ -196,7 +212,7 @@ add_service(r10, services["Chain replacement"])
 
 # 11. Approved, in progress.
 r11 = Repair.create!(
-  bike_id: bike10.id, customer_id: clemente.id, staff_member_id: ana.id,
+  bike_id: bike10.id, customer_id: clemente.id, staff_member_id: ana.id, taken_in_by: camila_user,
   status: "in_progress",
   dropped_off_at: 3.days.ago,
   promised_on: 2.days.from_now.to_date
@@ -205,7 +221,7 @@ add_service(r11, services["Disc brake pad replacement"])
 
 # 12. Being examined, mechanic already knows it needs a new wheel.
 r12 = Repair.create!(
-  bike_id: bike11.id, customer_id: justo.id, staff_member_id: pedro.id,
+  bike_id: bike11.id, customer_id: justo.id, staff_member_id: pedro.id, taken_in_by: ana_user,
   status: "diagnosing",
   dropped_off_at: Time.current,
   promised_on: 4.days.from_now.to_date
@@ -214,7 +230,7 @@ add_service(r12, services["Wheel replacement"])
 
 # 13. Second, older repair on bike2.
 r13 = Repair.create!(
-  bike_id: bike2.id, customer_id: eduardo.id, staff_member_id: felipe.id,
+  bike_id: bike2.id, customer_id: eduardo.id, staff_member_id: felipe.id, taken_in_by: camila_user,
   status: "picked_up",
   dropped_off_at: 20.days.ago,
   promised_on: 19.days.ago.to_date,
@@ -225,7 +241,7 @@ add_service(r13, services["Full bike wash"])
 
 # 14. Second, older repair on bike5.
 r14 = Repair.create!(
-  bike_id: bike5.id, customer_id: andres.id, staff_member_id: pedro.id,
+  bike_id: bike5.id, customer_id: andres.id, staff_member_id: pedro.id, taken_in_by: camila_user,
   status: "picked_up",
   dropped_off_at: 15.days.ago,
   promised_on: 14.days.ago.to_date,
@@ -236,7 +252,7 @@ add_service(r14, services["Saddle replacement"])
 
 # 15. Second, older repair on bike6.
 r15 = Repair.create!(
-  bike_id: bike6.id, customer_id: ignacio.id, staff_member_id: ana.id,
+  bike_id: bike6.id, customer_id: ignacio.id, staff_member_id: ana.id, taken_in_by: felipe_user,
   status: "picked_up",
   dropped_off_at: 25.days.ago,
   promised_on: 24.days.ago.to_date,
@@ -246,7 +262,7 @@ add_service(r15, services["Handlebar tape replacement"])
 
 # 16. Second repair on bike7, still waiting on the customer.
 r16 = Repair.create!(
-  bike_id: bike7.id, customer_id: isidora.id, staff_member_id: felipe.id,
+  bike_id: bike7.id, customer_id: isidora.id, staff_member_id: felipe.id, taken_in_by: camila_user,
   status: "awaiting_approval",
   dropped_off_at: 1.day.ago,
   promised_on: 2.days.from_now.to_date
@@ -313,6 +329,6 @@ diagnoses = {
 diagnoses.each { |repair, html| repair.update!(diagnosis: html) }
 
 puts "Seeded #{ServiceType.count} services, #{StaffMember.count} staff, " \
-     "#{Customer.count} customers, #{Bike.count} bikes, " \
+     "#{User.count} accounts, #{Customer.count} customers, #{Bike.count} bikes, " \
      "#{Repair.count} repairs, #{RepairLineItem.count} line items, " \
      "#{ActiveStorage::Attachment.where(record_type: "Repair").count} photos, #{ActionText::RichText.count} diagnoses."

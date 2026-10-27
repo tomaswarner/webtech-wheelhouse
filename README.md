@@ -84,13 +84,59 @@ create the databases, load the schema and seed it
 
 `db:setup` creates the development and test databases, loads `db/schema.rb` into them, and runs
 `db/seeds.rb`. on a database that already exists, use `bin/rails db:reset` instead, which drops it
-first.
+first. if you already had the database from an earlier lab, `bin/rails db:migrate` and then
+`bin/rails db:seed` work too.
+
+## signing in
+
+every page asks you to sign in except the price list (`/services` and each service's page), the
+sign-in page, the sign-up page and the forgotten password pages. open http://localhost:3000 and
+the app sends you to sign in.
+
+the seed creates these accounts. **they exist only in development**, on the database the seed
+fills on your machine.
+
+| email address          | password             | role     | member of the staff |
+|------------------------|----------------------|----------|---------------------|
+| jorge@wheelhouse.cl    | `owner-keys-2026`    | owner    | Jorge Fuentes       |
+| camila@wheelhouse.cl   | `counter-desk-2026`  | counter  | Camila Fuentes      |
+| pedro@wheelhouse.cl    | `pedro-wrench-2026`  | mechanic | Pedro Soto          |
+| ana@wheelhouse.cl      | `ana-spokes-2026`    | mechanic | Ana Muñoz           |
+| felipe@wheelhouse.cl   | `felipe-chain-2026`  | mechanic | Felipe Rojas        |
+| spare@wheelhouse.cl    | `spare-account-2026` | counter  | none                |
+
+running the seed again puts every password back to the one in this table.
+
+anyone can make an account from the sign-up page (linked from the sign-in page). it gets the
+`counter` role, the one with the fewest permissions (why is in
+[decisions](docs/decisions.md), "the role of a new account"). no page lists or edits accounts: the role, and joining an account
+to a member of the staff, are changed from the console, for example
+
+    bin/rails runner 'User.find_by(email_address: "someone@wheelhouse.cl").update!(role: "mechanic", staff_member: StaffMember.find_by(name: "Pedro Soto"))'
+
+## reading the emails
+
+the app sends two emails: a welcome email when an account is created from the sign-up page, and
+the link to choose a new password from "forgot password?". in development they never leave your
+machine and no mail server or credential is needed: rails writes every email to a file in
+**`tmp/mails/`**, one file per recipient, named after the email address (for example
+`tmp/mails/ana@wheelhouse.cl`). new emails to the same address are added at the end of its file.
+
+    cat tmp/mails/ana@wheelhouse.cl
+
+each email has a text part and an html part. copy the `http://localhost:3000/passwords/.../edit`
+link from the text part into the browser (with `bin/dev` running) to open the form for a new
+password; the link works for 15 minutes and only until the password is changed. the emails are
+sent by a job after the response, so the file shows up a moment after the page.
+
+to look at an email without sending it, open http://localhost:3000/rails/mailers, which renders the
+welcome email and the password email with the first account of the database.
 
 ## running it
 
     bin/dev
 
-then open http://localhost:3000. the repairs page (http://localhost:3000/repairs) should show a
+then open http://localhost:3000 and sign in with one of the accounts above. the repairs page (http://localhost:3000/repairs) should show a
 thumbnail and the start of the diagnosis on every row; the services page shows the price list.
 
 `bin/dev` installs foreman the first time it runs; leave it running and stop it with ctrl+c.
@@ -104,7 +150,8 @@ lab 10 adds a json api under `/api/v1` for the shop's website and the accounting
 routes, the shape of every document and the decisions are in [docs/api.md](docs/api.md).
 
 reading the price list is public. reading repairs and registering a service need the token, sent as
-`Authorization: Bearer <token>`.
+`Authorization: Bearer <token>`. the api does not use the accounts or the session cookie of the
+pages: it answers with the token alone, and never redirects to sign in.
 
 with the app running (`bin/dev`), from another terminal
 
@@ -133,9 +180,15 @@ page's folder with `python3 -m http.server 5500`.
 
 ## what's here so far
 
-this is lab 10. every record can be created, edited and deleted from the browser (lab 8), a repair
-carries intake photos and a diagnosis (lab 9), and the price list and the repairs can be read as json
-(lab 10).
+this is lab 11. every record can be created, edited and deleted from the browser (lab 8), a repair
+carries intake photos and a diagnosis (lab 9), the price list and the repairs can be read as json
+(lab 10), and the people of the workshop sign in with an email address and a password (lab 11).
+
+accounts are built with the rails 8 authentication generator (`bin/rails generate authentication`),
+no gem. passwords are kept only as a bcrypt digest, and must have at least 10 characters. a repair
+records the account that took it in, read from the session (the form has no field for it); the
+repairs taken in before there were accounts show "not recorded". a member of the staff who has an
+account can't be deleted.
 
 photos use active storage, stored in the `storage/` folder (not committed). the seed attaches the
 photos in `db/seeds/` (CC0, from Wikimedia Commons) to most repairs: one bike, one picture, and the three detail shots of the red road bike are crops of its side photo. a repair has any number of photos, chosen in the repair

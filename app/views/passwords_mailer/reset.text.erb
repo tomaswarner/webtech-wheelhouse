@@ -1,2 +1,9 @@
-You can reset your password within the next 15 minutes on this password reset page:
+Reset your Wheelhouse password
+
+Someone asked to reset the Wheelhouse password of <%= @user.email_address %>.
+You can reset it within the next 15 minutes on this password reset page:
 <%= edit_password_url(@user.password_reset_token) %>
+
+If it wasn't you, ignore this email: your password stays the same.
+
+The Wheelhouse workshop

@@ -33,3 +33,14 @@ jobs.
 **What changes if the answer is the other way:** if every job needs a yes from the customer, however
 small, that shortcut transition gets removed from the lifecycle, and `awaiting_approval` becomes a
 mandatory state every repair passes through.
+
+## The role of a new account
+
+**Decision:** `counter`, the role with the fewest permissions.
+
+**Why:** of the three people in the workshop, the person at the counter does the least to the
+records. They take a bike in, tag it, and look a repair up when a customer calls to ask if it's
+ready. A mechanic does all of that and also writes the diagnosis and adds the jobs that get
+charged, and the owner on top sets the price list. An account nobody has looked at yet (anyone
+can sign up) should start with the least it can do; the owner raises it from the seed or the
+console once he knows who it is.

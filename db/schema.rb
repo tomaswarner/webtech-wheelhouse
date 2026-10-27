@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_27_181214) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_27_181236) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -91,9 +91,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_27_181214) do
     t.datetime "picked_up_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "taken_in_by_id"
     t.index ["bike_id"], name: "index_repairs_on_bike_id"
     t.index ["customer_id"], name: "index_repairs_on_customer_id"
     t.index ["staff_member_id"], name: "index_repairs_on_staff_member_id"
+    t.index ["taken_in_by_id"], name: "index_repairs_on_taken_in_by_id"
   end
 
   create_table "service_types", force: :cascade do |t|
@@ -125,7 +127,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_27_181214) do
     t.string "password_digest", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["email_address"], name: "index_users_on_email_address", unique: true
+    t.string "role", default: "counter", null: false
+    t.bigint "staff_member_id"
+    t.index "lower((email_address)::text)", name: "index_users_on_lower_email_address", unique: true
+    t.index ["staff_member_id"], name: "index_users_on_staff_member_id", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -136,5 +141,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_27_181214) do
   add_foreign_key "repairs", "bikes"
   add_foreign_key "repairs", "customers"
   add_foreign_key "repairs", "staff_members"
+  add_foreign_key "repairs", "users", column: "taken_in_by_id"
   add_foreign_key "sessions", "users"
+  add_foreign_key "users", "staff_members"
 end

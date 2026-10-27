@@ -1,4 +1,11 @@
+<h1>Reset your Wheelhouse password</h1>
+
 <p>
-  You can reset your password within the next 15 minutes on
+  Someone asked to reset the Wheelhouse password of <strong><%= @user.email_address %></strong>.
+  You can reset it within the next 15 minutes on
   <%= link_to "this password reset page", edit_password_url(@user.password_reset_token) %>.
 </p>
+
+<p>If it wasn't you, ignore this email: your password stays the same.</p>
+
+<p>The Wheelhouse workshop</p>

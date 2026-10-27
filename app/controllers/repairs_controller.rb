@@ -6,7 +6,7 @@ class RepairsController < ApplicationController
   before_action :load_choices, only: [:new, :create, :edit, :update]
 
   def index
-    @repairs = Repair.newest_first.includes(:bike, :customer).with_attached_intake_photos.with_rich_text_diagnosis
+    @repairs = Repair.newest_first.includes(:bike, :customer, taken_in_by: :staff_member).with_attached_intake_photos.with_rich_text_diagnosis
   end
 
   def show
@@ -20,6 +20,7 @@ class RepairsController < ApplicationController
   def create
     @repair = Repair.new(repair_params.except(:intake_photos))
     @repair.add_intake_photos(repair_params[:intake_photos])
+    @repair.taken_in_by = Current.user
     if @repair.save
       redirect_to @repair, notice: "Repair #{@repair} was taken in."
     else
@@ -54,7 +55,7 @@ class RepairsController < ApplicationController
   private
 
   def set_repair
-    @repair = Repair.with_attached_intake_photos.with_rich_text_diagnosis.includes(:customer, :staff_member, bike: :customer, repair_line_items: :service_type).find(params[:id])
+    @repair = Repair.with_attached_intake_photos.with_rich_text_diagnosis.includes(:customer, :staff_member, taken_in_by: :staff_member, bike: :customer, repair_line_items: :service_type).find(params[:id])
   end
 
   def load_choices

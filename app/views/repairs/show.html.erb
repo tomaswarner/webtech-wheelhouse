@@ -3,6 +3,7 @@
 <h1>Repair #<%= @repair.id %></h1>
 <p>Bike: <%= link_to "#{@repair.bike.make} #{@repair.bike.model} (#{@repair.bike.serial_number})", @repair.bike %></p>
 <p>Customer: <%= link_to @repair.customer.name, @repair.customer %></p>
+<p>Taken in by: <%= @repair.taken_in_by ? @repair.taken_in_by.display_name : "Not recorded" %></p>
 <p>Mechanic: <%= @repair.staff_member ? link_to(@repair.staff_member.name, @repair.staff_member) : "Unassigned" %></p>
 <p>Status: <%= @repair.status.humanize %></p>
 <p>Promised: <%= @repair.promised_on.strftime("%b %d, %Y") %></p>
