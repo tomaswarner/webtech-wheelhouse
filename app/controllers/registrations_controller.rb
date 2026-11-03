@@ -1,5 +1,7 @@
 class RegistrationsController < ApplicationController
   allow_unauthenticated_access only: %i[new create]
+  # Account pages: no record to authorize (docs/decisions.md, "Actions without a policy").
+  skip_after_action :verify_pundit_authorization
 
   def new
     @user = User.new

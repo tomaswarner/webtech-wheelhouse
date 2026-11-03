@@ -1,5 +1,7 @@
 class PasswordsController < ApplicationController
   allow_unauthenticated_access
+  # Account pages: no record to authorize (docs/decisions.md, "Actions without a policy").
+  skip_after_action :verify_pundit_authorization
   before_action :set_user_by_token, only: %i[ edit update ]
 
   def new

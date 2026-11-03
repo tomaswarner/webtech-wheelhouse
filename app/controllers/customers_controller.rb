@@ -2,18 +2,21 @@ class CustomersController < ApplicationController
   before_action :set_customer, only: [:show, :edit, :update, :destroy]
 
   def index
-    @customers = Customer.by_name
+    authorize Customer # a mechanic gets the 403 page, not an empty list
+    @customers = policy_scope(Customer).by_name
   end
 
   def show
   end
 
   def new
-    @customer = Customer.new
+    @customer = authorize Customer.new
   end
 
   def create
-    @customer = Customer.new(customer_params)
+    @customer = authorize Customer.new
+    @customer.assign_attributes(permitted_attributes(@customer))
+
     if @customer.save
       redirect_to @customer, notice: "Customer #{@customer.name} was created."
     else
@@ -25,7 +28,7 @@ class CustomersController < ApplicationController
   end
 
   def update
-    if @customer.update(customer_params)
+    if @customer.update(permitted_attributes(@customer))
       redirect_to @customer, notice: "Customer #{@customer.name} was updated."
     else
       render :edit, status: :unprocessable_entity
@@ -43,10 +46,6 @@ class CustomersController < ApplicationController
   private
 
   def set_customer
-    @customer = Customer.includes(bikes: :customer).find(params[:id])
-  end
-
-  def customer_params
-    params.expect(customer: [:name, :phone])
+    @customer = authorize Customer.includes(bikes: :customer).find(params[:id])
   end
 end

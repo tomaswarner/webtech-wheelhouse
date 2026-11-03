@@ -5,22 +5,33 @@ class RepairsController < ApplicationController
   before_action :set_repair, only: [:show, :edit, :update, :destroy]
   before_action :load_choices, only: [:new, :create, :edit, :update]
 
+  # The list comes from RepairPolicy::Scope: every repair for owner and
+  # counter, only their own for a mechanic. The scope is a relation, so the
+  # ordering and eager loading chain after it and the query count is the same
+  # for every role.
   def index
-    @repairs = Repair.newest_first.includes(:bike, :customer, taken_in_by: :staff_member).with_attached_intake_photos.with_rich_text_diagnosis
+    @repairs = policy_scope(Repair)
+      .newest_first
+      .includes(:bike, :customer, taken_in_by: :staff_member)
+      .with_attached_intake_photos
+      .with_rich_text_diagnosis
   end
 
   def show
   end
 
   def new
-    @repair = Repair.new(bike_id: params[:bike_id], dropped_off_at: Time.current.change(sec: 0))
+    @repair = authorize Repair.new(bike_id: params[:bike_id], dropped_off_at: Time.current.change(sec: 0))
     add_blank_lines(NEW_REPAIR_LINES)
   end
 
   def create
-    @repair = Repair.new(repair_params.except(:intake_photos))
-    @repair.add_intake_photos(repair_params[:intake_photos])
-    @repair.taken_in_by = Current.user
+    @repair = authorize Repair.new
+    attributes = permitted_attributes(@repair)
+    @repair.assign_attributes(attributes.except(:intake_photos))
+    @repair.add_intake_photos(attributes[:intake_photos])
+    @repair.taken_in_by = Current.user # from the session, never from the form
+
     if @repair.save
       redirect_to @repair, notice: "Repair #{@repair} was taken in."
     else
@@ -33,9 +44,15 @@ class RepairsController < ApplicationController
     add_blank_lines(EXTRA_LINES)
   end
 
+  # set_repair already ran authorize (update?), so a refused request stops
+  # before this line and writes nothing. The attribute list comes from the
+  # policy: a mechanic's hand-added repair[staff_member_id] or price_charged
+  # is dropped and the rest of the request goes on.
   def update
-    @repair.assign_attributes(repair_params.except(:intake_photos))
-    @repair.add_intake_photos(repair_params[:intake_photos])
+    attributes = permitted_attributes(@repair)
+    @repair.assign_attributes(attributes.except(:intake_photos))
+    @repair.add_intake_photos(attributes[:intake_photos])
+
     if @repair.save
       redirect_to @repair, notice: "Repair #{@repair} was updated."
     else
@@ -54,8 +71,17 @@ class RepairsController < ApplicationController
 
   private
 
+  # authorize asks the method named after the action: show?, edit? (= update?),
+  # update?, destroy?. A mechanic who types another mechanic's repair id gets
+  # the same 403 on the page and on the edit form.
   def set_repair
-    @repair = Repair.with_attached_intake_photos.with_rich_text_diagnosis.includes(:customer, :staff_member, taken_in_by: :staff_member, bike: :customer, repair_line_items: :service_type).find(params[:id])
+    @repair = Repair
+      .with_attached_intake_photos
+      .with_rich_text_diagnosis
+      .includes(:customer, :staff_member, { taken_in_by: :staff_member },
+                { bike: :customer }, { repair_line_items: :service_type })
+      .find(params[:id])
+    authorize @repair
   end
 
   def load_choices
@@ -66,13 +92,5 @@ class RepairsController < ApplicationController
 
   def add_blank_lines(count)
     count.times { @repair.repair_line_items.build }
-  end
-
-  def repair_params
-    params.expect(repair: [
-      :bike_id, :staff_member_id, :status, :dropped_off_at, :promised_on, :picked_up_at, :diagnosis,
-      intake_photos: [],
-      repair_line_items_attributes: [[:id, :service_type_id, :price_charged, :_destroy]]
-    ])
   end
 end
