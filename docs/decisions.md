@@ -58,21 +58,3 @@ console once he knows who it is.
 The price list (`ServiceTypesController#index` and `#show`) is public too, but it does **not** skip the check: it asks `ServiceTypePolicy`, which answers yes to a visitor. The `/api/v1` controllers inherit from `ActionController::API`, so Pundit does not touch them: they keep their token check.
 
 **Why:** listing the exceptions in one place makes a forgotten `authorize` an error instead of an open page. A new controller is covered without writing anything.
-
-## What "handed back" means for permissions
-
-**Decision:** a repair is handed back when its status is `picked_up`, the final state in `docs/domain-model.md`. From then on only the owner edits it. A `declined` repair is not handed back until the customer picks the bike up (`declined → picked_up`).
-
-**Why:** after the bike leaves the shop the repair is the shop's record of what was charged; the owner is the one who corrects it.
-
-## Refusals: 403 page, not 404 and not a redirect
-
-**Decision:** a signed-in person who asks for something their role may not do gets a `403` and the "You are not allowed to do that." page, in the app's layout. A mechanic who types another mechanic's repair id gets the same `403` on the repair page and on its edit form.
-
-**What changes if the answer is the other way:** looking the repair up inside `policy_scope(Repair)` in `set_repair` would answer `404` instead and hide that the repair exists. The policies would not change.
-
-## Removing intake photos
-
-**Assumption made to keep working:** mechanics add intake photos but do not remove them; removing a photo is a front-desk edit (owner always, counter while the repair is not handed back).
-
-**What changes if the answer is the other way:** `RepairPolicy#remove_photo?` becomes `update?`, and the row in `docs/permissions.md` changes with it.

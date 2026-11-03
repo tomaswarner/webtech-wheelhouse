@@ -5,16 +5,8 @@ class StaffMembersController < ApplicationController
     @staff_members = policy_scope(StaffMember).by_name
   end
 
-  # Every role reads a staff member's page, so the repairs listed on it go
-  # through the repair scope: a mechanic opening a colleague's page sees none
-  # of the colleague's repairs.
   def show
-    @repairs = policy_scope(Repair)
-      .where(staff_member: @staff_member)
-      .newest_first
-      .includes(:bike, :customer, taken_in_by: :staff_member)
-      .with_attached_intake_photos
-      .with_rich_text_diagnosis
+    @repairs = policy_scope(Repair).where(staff_member: @staff_member).includes(:bike, :customer)
   end
 
   def new

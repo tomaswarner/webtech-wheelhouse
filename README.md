@@ -96,9 +96,6 @@ the app sends you to sign in.
 the seed creates these accounts. **they exist only in development**, on the database the seed
 fills on your machine.
 
-what each role may do is in [docs/permissions.md](docs/permissions.md). a request the role may
-not make answers with a "you are not allowed to do that." page (403).
-
 | email address          | password             | role     | member of the staff | what it can do |
 |------------------------|----------------------|----------|---------------------|----------------|
 | jorge@wheelhouse.cl    | `owner-keys-2026`    | owner    | Jorge Fuentes       | everything, including deleting records and editing handed-back repairs ([permissions](docs/permissions.md)) |
@@ -183,10 +180,9 @@ page's folder with `python3 -m http.server 5500`.
 
 ## what's here so far
 
-this is lab 12. every record can be created, edited and deleted from the browser (lab 8), a repair
+this is lab 11. every record can be created, edited and deleted from the browser (lab 8), a repair
 carries intake photos and a diagnosis (lab 9), the price list and the repairs can be read as json
-(lab 10), the people of the workshop sign in with an email address and a password (lab 11), and
-each role reaches only its part of the workshop, with pundit policies (lab 12).
+(lab 10), and the people of the workshop sign in with an email address and a password (lab 11).
 
 accounts are built with the rails 8 authentication generator (`bin/rails generate authentication`),
 no gem. passwords are kept only as a bcrypt digest, and must have at least 10 characters. a repair

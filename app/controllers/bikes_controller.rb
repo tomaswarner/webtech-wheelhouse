@@ -7,13 +7,8 @@ class BikesController < ApplicationController
     @bikes = policy_scope(Bike).by_make_and_model.includes(:customer)
   end
 
-  # The bike's repairs go through the same repair scope as /repairs.
   def show
-    @repairs = policy_scope(Repair)
-      .where(bike: @bike)
-      .includes(:bike, :customer, taken_in_by: :staff_member)
-      .with_attached_intake_photos
-      .with_rich_text_diagnosis
+    @repairs = policy_scope(Repair).where(bike: @bike).includes(:bike, :customer).with_attached_intake_photos.with_rich_text_diagnosis
   end
 
   def new

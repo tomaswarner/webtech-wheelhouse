@@ -1,7 +1,7 @@
 class ServiceTypesController < ApplicationController
-  # The price list stays public (docs/decisions.md). The actions still ask the
-  # policy, which answers true for a visitor.
+  # The price list is public; creating, editing and deleting a service are not.
   allow_unauthenticated_access only: %i[index show]
+
   before_action :set_service_type, only: [:show, :edit, :update, :destroy]
 
   def index

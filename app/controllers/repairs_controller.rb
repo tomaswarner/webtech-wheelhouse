@@ -5,16 +5,8 @@ class RepairsController < ApplicationController
   before_action :set_repair, only: [:show, :edit, :update, :destroy]
   before_action :load_choices, only: [:new, :create, :edit, :update]
 
-  # The list comes from RepairPolicy::Scope: every repair for owner and
-  # counter, only their own for a mechanic. The scope is a relation, so the
-  # ordering and eager loading chain after it and the query count is the same
-  # for every role.
   def index
-    @repairs = policy_scope(Repair)
-      .newest_first
-      .includes(:bike, :customer, taken_in_by: :staff_member)
-      .with_attached_intake_photos
-      .with_rich_text_diagnosis
+    @repairs = policy_scope(Repair).newest_first.includes(:bike, :customer, taken_in_by: :staff_member).with_attached_intake_photos.with_rich_text_diagnosis
   end
 
   def show
@@ -71,17 +63,8 @@ class RepairsController < ApplicationController
 
   private
 
-  # authorize asks the method named after the action: show?, edit? (= update?),
-  # update?, destroy?. A mechanic who types another mechanic's repair id gets
-  # the same 403 on the page and on the edit form.
   def set_repair
-    @repair = Repair
-      .with_attached_intake_photos
-      .with_rich_text_diagnosis
-      .includes(:customer, :staff_member, { taken_in_by: :staff_member },
-                { bike: :customer }, { repair_line_items: :service_type })
-      .find(params[:id])
-    authorize @repair
+    @repair = authorize Repair.with_attached_intake_photos.with_rich_text_diagnosis.includes(:customer, :staff_member, taken_in_by: :staff_member, bike: :customer, repair_line_items: :service_type).find(params[:id])
   end
 
   def load_choices

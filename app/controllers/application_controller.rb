@@ -41,9 +41,7 @@ class ApplicationController < ActionController::Base
   # redirect. authorize runs before any write, so a refused update/destroy
   # changes nothing. Visitors never get here: require_authentication runs
   # first and sends them to sign in.
-  def user_not_authorized(exception)
-    logger.warn "403: user #{Current.user&.id} refused #{exception.query} " \
-                "on #{exception.record.class.name} #{exception.record.try(:to_param)}"
+  def user_not_authorized
     render "shared/forbidden", status: :forbidden
   end
 end
