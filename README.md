@@ -96,14 +96,17 @@ the app sends you to sign in.
 the seed creates these accounts. **they exist only in development**, on the database the seed
 fills on your machine.
 
-| email address          | password             | role     | member of the staff |
-|------------------------|----------------------|----------|---------------------|
-| jorge@wheelhouse.cl    | `owner-keys-2026`    | owner    | Jorge Fuentes       |
-| camila@wheelhouse.cl   | `counter-desk-2026`  | counter  | Camila Fuentes      |
-| pedro@wheelhouse.cl    | `pedro-wrench-2026`  | mechanic | Pedro Soto          |
-| ana@wheelhouse.cl      | `ana-spokes-2026`    | mechanic | Ana Muñoz           |
-| felipe@wheelhouse.cl   | `felipe-chain-2026`  | mechanic | Felipe Rojas        |
-| spare@wheelhouse.cl    | `spare-account-2026` | counter  | none                |
+what each role may do is in [docs/permissions.md](docs/permissions.md). a request the role may
+not make answers with a "you are not allowed to do that." page (403).
+
+| email address          | password             | role     | member of the staff | what it can do |
+|------------------------|----------------------|----------|---------------------|----------------|
+| jorge@wheelhouse.cl    | `owner-keys-2026`    | owner    | Jorge Fuentes       | everything, including deleting records and editing handed-back repairs ([permissions](docs/permissions.md)) |
+| camila@wheelhouse.cl   | `counter-desk-2026`  | counter  | Camila Fuentes      | takes in repairs, manages customers and bikes, edits repairs until they are handed back; deletes nothing ([permissions](docs/permissions.md)) |
+| pedro@wheelhouse.cl    | `pedro-wrench-2026`  | mechanic | Pedro Soto          | reads only his own repairs and changes their status, diagnosis and intake photos until they are handed back ([permissions](docs/permissions.md)) |
+| ana@wheelhouse.cl      | `ana-spokes-2026`    | mechanic | Ana Muñoz           | same as pedro, for ana's repairs ([permissions](docs/permissions.md)) |
+| felipe@wheelhouse.cl   | `felipe-chain-2026`  | mechanic | Felipe Rojas        | same as pedro, for felipe's repairs ([permissions](docs/permissions.md)) |
+| spare@wheelhouse.cl    | `spare-account-2026` | counter  | none                | same as any counter: the role a sign-up gets ([permissions](docs/permissions.md)) |
 
 running the seed again puts every password back to the one in this table.
 
@@ -180,9 +183,10 @@ page's folder with `python3 -m http.server 5500`.
 
 ## what's here so far
 
-this is lab 11. every record can be created, edited and deleted from the browser (lab 8), a repair
+this is lab 12. every record can be created, edited and deleted from the browser (lab 8), a repair
 carries intake photos and a diagnosis (lab 9), the price list and the repairs can be read as json
-(lab 10), and the people of the workshop sign in with an email address and a password (lab 11).
+(lab 10), the people of the workshop sign in with an email address and a password (lab 11), and
+each role reaches only its part of the workshop, with pundit policies (lab 12).
 
 accounts are built with the rails 8 authentication generator (`bin/rails generate authentication`),
 no gem. passwords are kept only as a bcrypt digest, and must have at least 10 characters. a repair

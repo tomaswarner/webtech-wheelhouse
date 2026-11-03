@@ -44,3 +44,35 @@ ready. A mechanic does all of that and also writes the diagnosis and adds the jo
 charged, and the owner on top sets the price list. An account nobody has looked at yet (anyone
 can sign up) should start with the least it can do; the owner raises it from the seed or the
 console once he knows who it is.
+
+## Actions without a policy
+
+**Decision:** every controller action asks a Pundit policy, and `ApplicationController` fails the request in development if one does not (`verify_authorized`, and `verify_policy_scoped` for `index`). Only these public account actions skip the check, with `skip_after_action :verify_pundit_authorization`:
+
+| Controller | Actions | Why |
+|---|---|---|
+| `SessionsController` | `new`, `create`, `destroy` | Signing in happens before there is an account to ask about; signing out only ends the person's own session. |
+| `RegistrationsController` | `new`, `create` | A visitor creating an account has no role yet; the new account always gets the default role, never one from the form. |
+| `PasswordsController` | `new`, `create`, `edit`, `update` | The forgotten-password flow is for people who cannot sign in; the reset token in the link is what authorizes it. |
+
+The price list (`ServiceTypesController#index` and `#show`) is public too, but it does **not** skip the check: it asks `ServiceTypePolicy`, which answers yes to a visitor. The `/api/v1` controllers inherit from `ActionController::API`, so Pundit does not touch them: they keep their token check.
+
+**Why:** listing the exceptions in one place makes a forgotten `authorize` an error instead of an open page. A new controller is covered without writing anything.
+
+## What "handed back" means for permissions
+
+**Decision:** a repair is handed back when its status is `picked_up`, the final state in `docs/domain-model.md`. From then on only the owner edits it. A `declined` repair is not handed back until the customer picks the bike up (`declined → picked_up`).
+
+**Why:** after the bike leaves the shop the repair is the shop's record of what was charged; the owner is the one who corrects it.
+
+## Refusals: 403 page, not 404 and not a redirect
+
+**Decision:** a signed-in person who asks for something their role may not do gets a `403` and the "You are not allowed to do that." page, in the app's layout. A mechanic who types another mechanic's repair id gets the same `403` on the repair page and on its edit form.
+
+**What changes if the answer is the other way:** looking the repair up inside `policy_scope(Repair)` in `set_repair` would answer `404` instead and hide that the repair exists. The policies would not change.
+
+## Removing intake photos
+
+**Assumption made to keep working:** mechanics add intake photos but do not remove them; removing a photo is a front-desk edit (owner always, counter while the repair is not handed back).
+
+**What changes if the answer is the other way:** `RepairPolicy#remove_photo?` becomes `update?`, and the row in `docs/permissions.md` changes with it.

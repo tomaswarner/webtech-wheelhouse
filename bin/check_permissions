@@ -1,0 +1,155 @@
+#!/usr/bin/env bash
+# Checks the Lab 12 permissions against a running app (bin/dev on port 3000).
+# Run from the repo root, after `bin/rails db:seed`:
+#
+#   bin/check_permissions            # or BASE=http://localhost:3001 bin/check_permissions
+#
+# It signs in with the seed accounts (README) and compares status codes with
+# docs/permissions.md. Two checks write to the development database (a
+# mechanic's allowed update); run `bin/rails db:seed` again afterwards.
+set -u
+
+BASE="${BASE:-http://localhost:3000}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+PASS=0
+FAIL=0
+
+ok()   { PASS=$((PASS + 1)); printf '  ok    %s\n' "$1"; }
+bad()  { FAIL=$((FAIL + 1)); printf '  FAIL  %s\n' "$1"; }
+
+expect() { # expect <label> <wanted> <got>
+  if [ "$2" = "$3" ]; then ok "$1 -> $3"; else bad "$1 -> got $3, wanted $2"; fi
+}
+
+token_from() { # authenticity token of a page (form field or csrf meta tag)
+  grep -oE 'name="csrf-token" content="[^"]*"|name="authenticity_token" value="[^"]*"' "$1" \
+    | head -1 | sed -E 's/.*(content|value)="//; s/"$//'
+}
+
+sign_in() { # sign_in <jar> <email> <password>
+  local jar="$1" page="$TMP/signin.html"
+  curl -s -c "$jar" -b "$jar" "$BASE/session/new" -o "$page"
+  local token; token="$(token_from "$page")"
+  curl -s -o /dev/null -w '%{http_code}' -c "$jar" -b "$jar" -X POST "$BASE/session" \
+    --data-urlencode "authenticity_token=$token" \
+    --data-urlencode "email_address=$2" \
+    --data-urlencode "password=$3"
+}
+
+get() { # get <jar> <path> -> status code; body in $TMP/body.html
+  curl -s -o "$TMP/body.html" -w '%{http_code}' -b "$1" -c "$1" "$BASE$2"
+}
+
+send() { # send <jar> <method> <path> [extra --data-urlencode pairs...]
+  local jar="$1" method="$2" path="$3"; shift 3
+  curl -s -b "$jar" -c "$jar" "$BASE/repairs" -o "$TMP/tok.html"
+  local token; token="$(token_from "$TMP/tok.html")"
+  local args=()
+  for pair in "$@"; do args+=(--data-urlencode "$pair"); done
+  curl -s -o /dev/null -w '%{http_code}' -b "$jar" -c "$jar" -X POST "$BASE$path" \
+    --data-urlencode "_method=$method" --data-urlencode "authenticity_token=$token" ${args[@]+"${args[@]}"}
+}
+
+runner() { bin/rails runner "$1" 2>/dev/null | tail -1; }
+
+echo "Reading ids from the database..."
+read -r PEDRO_OPEN PEDRO_DONE ANA_OPEN UNASSIGNED CUSTOMER BIKE SERVICE ANA_STAFF <<<"$(runner '
+  p = StaffMember.find_by!(name: "Pedro Soto"); a = StaffMember.find_by!(name: "Ana Muñoz")
+  puts [Repair.where(staff_member: p).where.not(status: "picked_up").first.id,
+        Repair.where(staff_member: p, status: "picked_up").first.id,
+        Repair.where(staff_member: a).where.not(status: "picked_up").first.id,
+        Repair.where(staff_member: nil).first.id,
+        Customer.first.id, Bike.first.id, ServiceType.first.id, a.id].join(" ")')"
+if [ -z "${ANA_STAFF:-}" ]; then echo "Could not read ids (is the database seeded?)"; exit 1; fi
+
+echo "Visitor"
+V="$TMP/visitor"
+expect "GET /services" 200 "$(get "$V" /services)"
+expect "GET /services/$SERVICE" 200 "$(get "$V" /services/$SERVICE)"
+expect "GET /repairs (to sign in, not 403)" 302 "$(get "$V" /repairs)"
+expect "GET /customers (to sign in, not 403)" 302 "$(get "$V" /customers)"
+
+echo "Mechanic: pedro@wheelhouse.cl"
+P="$TMP/pedro"
+expect "sign in" 302 "$(sign_in "$P" pedro@wheelhouse.cl pedro-wrench-2026)"
+expect "GET /repairs" 200 "$(get "$P" /repairs)"
+if grep -q 'href="/customers"' "$TMP/body.html"; then bad "navbar shows Customers to a mechanic"; else ok "navbar hides Customers"; fi
+if grep -q 'href="/repairs/new"' "$TMP/body.html"; then bad "repairs index shows 'Take in' to a mechanic"; else ok "no 'Take in' button"; fi
+if grep -q "href=\"/repairs/$ANA_OPEN\"" "$TMP/body.html"; then bad "Pedro's index lists Ana's repair"; else ok "Pedro's index has no Ana repair"; fi
+if grep -q "href=\"/repairs/$UNASSIGNED\"" "$TMP/body.html"; then bad "Pedro's index lists the unassigned repair"; else ok "Pedro's index has no unassigned repair"; fi
+expect "GET own open repair" 200 "$(get "$P" /repairs/$PEDRO_OPEN)"
+if grep -q 'href="/customers/' "$TMP/body.html"; then bad "repair page links the customer for a mechanic"; else ok "customer shown without link"; fi
+expect "GET own open repair edit" 200 "$(get "$P" /repairs/$PEDRO_OPEN/edit)"
+if grep -qE 'repair\[bike_id\]|repair\[promised_on\]|repair_line_items_attributes' "$TMP/body.html"; then bad "mechanic form shows front-desk fields"; else ok "mechanic form: only status/diagnosis/photos"; fi
+expect "GET own handed-back repair edit" 403 "$(get "$P" /repairs/$PEDRO_DONE/edit)"
+if grep -q "not allowed to do that" "$TMP/body.html"; then ok "403 page has the message"; else bad "403 page without the message"; fi
+expect "GET Ana's repair" 403 "$(get "$P" /repairs/$ANA_OPEN)"
+expect "GET Ana's repair edit" 403 "$(get "$P" /repairs/$ANA_OPEN/edit)"
+expect "GET unassigned repair" 403 "$(get "$P" /repairs/$UNASSIGNED)"
+expect "GET /repairs/new" 403 "$(get "$P" /repairs/new)"
+expect "GET /customers" 403 "$(get "$P" /customers)"
+expect "GET /customers/$CUSTOMER" 403 "$(get "$P" /customers/$CUSTOMER)"
+expect "GET /bikes" 403 "$(get "$P" /bikes)"
+expect "GET /bikes/$BIKE" 403 "$(get "$P" /bikes/$BIKE)"
+expect "GET /services" 200 "$(get "$P" /services)"
+expect "GET /services/new" 403 "$(get "$P" /services/new)"
+expect "GET /staff_members" 200 "$(get "$P" /staff_members)"
+expect "GET /staff_members/$ANA_STAFF (Ana's page)" 200 "$(get "$P" /staff_members/$ANA_STAFF)"
+if grep -q "href=\"/repairs/$ANA_OPEN\"" "$TMP/body.html"; then bad "Ana's staff page lists her repairs to Pedro"; else ok "Ana's staff page hides her repairs"; fi
+expect "GET /staff_members/new" 403 "$(get "$P" /staff_members/new)"
+
+BEFORE="$(runner "puts Repair.find($ANA_OPEN).status")"
+expect "PATCH Ana's repair status=ready" 403 "$(send "$P" patch /repairs/$ANA_OPEN 'repair[status]=ready')"
+expect "  ...and Ana's repair is unchanged" "$BEFORE" "$(runner "puts Repair.find($ANA_OPEN).status")"
+expect "DELETE own repair" 403 "$(send "$P" delete /repairs/$PEDRO_OPEN)"
+expect "  ...and it still exists" true "$(runner "puts Repair.exists?($PEDRO_OPEN)")"
+
+OWN_BEFORE="$(runner "r = Repair.find($PEDRO_OPEN); puts [r.staff_member_id, r.promised_on].join(',')")"
+expect "PATCH own repair + hand-added staff_member_id/promised_on (dropped, request goes on)" 302 \
+  "$(send "$P" patch /repairs/$PEDRO_OPEN 'repair[diagnosis]=Checked by bin/check_permissions' \
+      "repair[staff_member_id]=$ANA_STAFF" 'repair[promised_on]=2030-01-01')"
+expect "  ...mechanic and promised day unchanged" "$OWN_BEFORE" \
+  "$(runner "r = Repair.find($PEDRO_OPEN); puts [r.staff_member_id, r.promised_on].join(',')")"
+
+echo "Counter: camila@wheelhouse.cl"
+C="$TMP/camila"
+expect "sign in" 302 "$(sign_in "$C" camila@wheelhouse.cl counter-desk-2026)"
+expect "GET /repairs" 200 "$(get "$C" /repairs)"
+expect "GET Ana's repair" 200 "$(get "$C" /repairs/$ANA_OPEN)"
+if grep -qE '>Delete<|value="Delete"' "$TMP/body.html"; then bad "counter sees Delete on a repair"; else ok "no Delete button for counter"; fi
+expect "GET handed-back repair edit" 403 "$(get "$C" /repairs/$PEDRO_DONE/edit)"
+expect "GET open repair edit" 200 "$(get "$C" /repairs/$PEDRO_OPEN/edit)"
+expect "GET /repairs/new" 200 "$(get "$C" /repairs/new)"
+expect "GET /customers" 200 "$(get "$C" /customers)"
+expect "GET /customers/new" 200 "$(get "$C" /customers/new)"
+expect "GET /bikes/$BIKE/edit" 200 "$(get "$C" /bikes/$BIKE/edit)"
+expect "DELETE a customer" 403 "$(send "$C" delete /customers/$CUSTOMER)"
+expect "DELETE a repair" 403 "$(send "$C" delete /repairs/$ANA_OPEN)"
+expect "GET /services/new" 403 "$(get "$C" /services/new)"
+expect "GET /staff_members/new" 403 "$(get "$C" /staff_members/new)"
+
+echo "Default-role account: spare@wheelhouse.cl (same as counter)"
+S="$TMP/spare"
+expect "sign in" 302 "$(sign_in "$S" spare@wheelhouse.cl spare-account-2026)"
+expect "GET /customers" 200 "$(get "$S" /customers)"
+expect "GET handed-back repair edit" 403 "$(get "$S" /repairs/$PEDRO_DONE/edit)"
+
+echo "Owner: jorge@wheelhouse.cl"
+O="$TMP/jorge"
+expect "sign in" 302 "$(sign_in "$O" jorge@wheelhouse.cl owner-keys-2026)"
+expect "GET handed-back repair edit" 200 "$(get "$O" /repairs/$PEDRO_DONE/edit)"
+expect "GET /services/new" 200 "$(get "$O" /services/new)"
+expect "GET /staff_members/new" 200 "$(get "$O" /staff_members/new)"
+expect "GET /services (signed in, public page)" 200 "$(get "$O" /services)"
+if grep -q 'href="/services/new"' "$TMP/body.html"; then ok "owner sees New service on the price list"; else bad "owner does not see New service on the price list"; fi
+expect "GET /services/$SERVICE (signed in, public page)" 200 "$(get "$O" /services/$SERVICE)"
+if grep -q "href=\"/services/$SERVICE/edit\"" "$TMP/body.html"; then ok "owner sees Edit on a service's page"; else bad "owner does not see Edit on a service's page"; fi
+
+echo "API (unchanged)"
+expect "GET /api/v1/services" 200 "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/api/v1/services")"
+expect "GET /api/v1/repairs without token" 401 "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/api/v1/repairs")"
+
+echo
+echo "$PASS passed, $FAIL failed. Run bin/rails db:seed to undo the test edit."
+[ "$FAIL" -eq 0 ]
