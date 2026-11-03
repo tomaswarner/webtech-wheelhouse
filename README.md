@@ -33,7 +33,7 @@ website visitor just looks at the public price list
 
 ruby 4.0.4
 
-rails 8.0
+rails 8.1
 
 node 26.7.0 or newer (see `.node-version`), with yarn
 
