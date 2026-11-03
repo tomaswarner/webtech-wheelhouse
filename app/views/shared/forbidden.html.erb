@@ -1,0 +1,10 @@
+<% provide(:title, "Not allowed") %>
+
+<div class="py-4">
+  <h1 class="h3">You are not allowed to do that.</h1>
+  <p class="text-body-secondary mb-4">
+    Your account (<%= Current.user&.display_name %>) does not have permission for this page or action.
+    If you think it should, ask the owner of the shop.
+  </p>
+  <%= link_to "Go to repairs", repairs_path, class: "btn btn-outline-primary" %>
+</div>

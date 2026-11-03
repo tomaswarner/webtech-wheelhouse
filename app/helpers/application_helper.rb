@@ -45,6 +45,14 @@ module ApplicationHelper
     repair.diagnosis.to_plain_text.squish.truncate(60)
   end
 
+  # True when the policy lets this person write `attribute` on `record`.
+  # Used by forms to render only the permitted fields.
+  def permitted_field?(record, attribute)
+    policy(record).permitted_attributes.any? do |entry|
+      entry.is_a?(Hash) ? entry.key?(attribute) : entry == attribute
+    end
+  end
+
   def status_choices
     Repair.statuses.keys.map { |status| [status.humanize, status] }
   end

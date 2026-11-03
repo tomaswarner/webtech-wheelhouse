@@ -2,63 +2,81 @@
   <%= render "shared/errors", object: repair %>
 
   <div class="row">
-    <div class="col-md-6 mb-3">
-      <%= form.label :bike_id, class: "form-label" %>
-      <%= form.collection_select :bike_id, bikes, :id, :display_name, { prompt: "Choose the bike" }, class: field_class(form, :bike_id, "form-select") %>
-      <%= field_feedback(form, :bike_id) %>
-      <div class="form-text">The customer is the bike's owner.</div>
-    </div>
+    <% if permitted_field?(repair, :bike_id) %>
+      <div class="col-md-6 mb-3">
+        <%= form.label :bike_id, class: "form-label" %>
+        <%= form.collection_select :bike_id, bikes, :id, :display_name, { prompt: "Choose the bike" }, class: field_class(form, :bike_id, "form-select") %>
+        <%= field_feedback(form, :bike_id) %>
+        <div class="form-text">The customer is the bike's owner.</div>
+      </div>
+    <% end %>
 
-    <div class="col-md-6 mb-3">
-      <%= form.label :staff_member_id, class: "form-label" %>
-      <%= form.collection_select :staff_member_id, mechanics, :id, :name, { include_blank: "Unassigned" }, class: field_class(form, :staff_member_id, "form-select") %>
-      <%= field_feedback(form, :staff_member_id) %>
-    </div>
+    <% if permitted_field?(repair, :staff_member_id) %>
+      <div class="col-md-6 mb-3">
+        <%= form.label :staff_member_id, class: "form-label" %>
+        <%= form.collection_select :staff_member_id, mechanics, :id, :name, { include_blank: "Unassigned" }, class: field_class(form, :staff_member_id, "form-select") %>
+        <%= field_feedback(form, :staff_member_id) %>
+      </div>
+    <% end %>
 
-    <div class="col-md-6 mb-3">
-      <%= form.label :status, class: "form-label" %>
-      <%= form.select :status, status_choices, {}, class: field_class(form, :status, "form-select") %>
-      <%= field_feedback(form, :status) %>
-    </div>
+    <% if permitted_field?(repair, :status) %>
+      <div class="col-md-6 mb-3">
+        <%= form.label :status, class: "form-label" %>
+        <%= form.select :status, status_choices, {}, class: field_class(form, :status, "form-select") %>
+        <%= field_feedback(form, :status) %>
+      </div>
+    <% end %>
 
-    <div class="col-md-6 mb-3">
-      <%= form.label :promised_on, class: "form-label" %>
-      <%= form.date_field :promised_on, class: field_class(form, :promised_on) %>
-      <%= field_feedback(form, :promised_on) %>
-    </div>
+    <% if permitted_field?(repair, :promised_on) %>
+      <div class="col-md-6 mb-3">
+        <%= form.label :promised_on, class: "form-label" %>
+        <%= form.date_field :promised_on, class: field_class(form, :promised_on) %>
+        <%= field_feedback(form, :promised_on) %>
+      </div>
+    <% end %>
 
-    <div class="col-md-6 mb-3">
-      <%= form.label :dropped_off_at, class: "form-label" %>
-      <%= form.datetime_field :dropped_off_at, step: 1, class: field_class(form, :dropped_off_at) %>
-      <%= field_feedback(form, :dropped_off_at) %>
-    </div>
+    <% if permitted_field?(repair, :dropped_off_at) %>
+      <div class="col-md-6 mb-3">
+        <%= form.label :dropped_off_at, class: "form-label" %>
+        <%= form.datetime_field :dropped_off_at, step: 1, class: field_class(form, :dropped_off_at) %>
+        <%= field_feedback(form, :dropped_off_at) %>
+      </div>
+    <% end %>
 
-    <div class="col-md-6 mb-3">
-      <%= form.label :picked_up_at, class: "form-label" %>
-      <%= form.datetime_field :picked_up_at, step: 1, class: field_class(form, :picked_up_at) %>
-      <%= field_feedback(form, :picked_up_at) %>
-      <div class="form-text">Leave it empty until the bike goes back to its owner.</div>
-    </div>
+    <% if permitted_field?(repair, :picked_up_at) %>
+      <div class="col-md-6 mb-3">
+        <%= form.label :picked_up_at, class: "form-label" %>
+        <%= form.datetime_field :picked_up_at, step: 1, class: field_class(form, :picked_up_at) %>
+        <%= field_feedback(form, :picked_up_at) %>
+        <div class="form-text">Leave it empty until the bike goes back to its owner.</div>
+      </div>
+    <% end %>
   </div>
 
-  <div class="mb-3">
-    <%= form.label :intake_photos, "Intake photos", class: "form-label" %>
-    <%= form.file_field :intake_photos, multiple: true, accept: Repair::PHOTO_TYPES.join(","), class: field_class(form, :intake_photos) %>
-    <%= field_feedback(form, :intake_photos) %>
-    <div class="form-text">JPEG, PNG or WebP, up to <%= Repair::MAX_PHOTO_SIZE / 1.megabyte %> MB each. New photos are added to the ones the repair already has. If the form comes back with an error, choose the files again.</div>
-  </div>
+  <% if permitted_field?(repair, :intake_photos) %>
+    <div class="mb-3">
+      <%= form.label :intake_photos, "Intake photos", class: "form-label" %>
+      <%= form.file_field :intake_photos, multiple: true, accept: Repair::PHOTO_TYPES.join(","), class: field_class(form, :intake_photos) %>
+      <%= field_feedback(form, :intake_photos) %>
+      <div class="form-text">JPEG, PNG or WebP, up to <%= Repair::MAX_PHOTO_SIZE / 1.megabyte %> MB each. New photos are added to the ones the repair already has. If the form comes back with an error, choose the files again.</div>
+    </div>
+  <% end %>
 
-  <div class="mb-3">
-    <%= form.label :diagnosis, class: "form-label" %>
-    <%= form.rich_text_area :diagnosis, class: field_class(form, :diagnosis, "trix-content") %>
-    <%= field_feedback(form, :diagnosis) %>
-    <div class="form-text">Optional.</div>
-  </div>
+  <% if permitted_field?(repair, :diagnosis) %>
+    <div class="mb-3">
+      <%= form.label :diagnosis, class: "form-label" %>
+      <%= form.rich_text_area :diagnosis, class: field_class(form, :diagnosis, "trix-content") %>
+      <%= field_feedback(form, :diagnosis) %>
+      <div class="form-text">Optional.</div>
+    </div>
+  <% end %>
 
-  <h2 class="h5 mt-2">Services</h2>
-  <p class="form-text">Lines left on "No service" are ignored. Save and edit again to get another empty line.</p>
-  <%= form.fields_for :repair_line_items do |line| %>
-    <%= render "line_fields", line: line, service_types: service_types %>
+  <% if permitted_field?(repair, :repair_line_items_attributes) %>
+    <h2 class="h5 mt-2">Services</h2>
+    <p class="form-text">Lines left on "No service" are ignored. Save and edit again to get another empty line.</p>
+    <%= form.fields_for :repair_line_items do |line| %>
+      <%= render "line_fields", line: line, service_types: service_types %>
+    <% end %>
   <% end %>
 
   <div class="mt-3">

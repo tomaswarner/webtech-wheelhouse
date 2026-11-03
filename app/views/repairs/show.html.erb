@@ -1,8 +1,9 @@
 <% provide(:title, "Repair ##{@repair.id}") %>
 <%= link_to "← Back to repairs", repairs_path %>
 <h1>Repair #<%= @repair.id %></h1>
-<p>Bike: <%= link_to "#{@repair.bike.make} #{@repair.bike.model} (#{@repair.bike.serial_number})", @repair.bike %></p>
-<p>Customer: <%= link_to @repair.customer.name, @repair.customer %></p>
+<% bike_label = "#{@repair.bike.make} #{@repair.bike.model} (#{@repair.bike.serial_number})" %>
+<p>Bike: <%= policy(@repair.bike).show? ? link_to(bike_label, @repair.bike) : bike_label %></p>
+<p>Customer: <%= policy(@repair.customer).show? ? link_to(@repair.customer.name, @repair.customer) : @repair.customer.name %></p>
 <p>Taken in by: <%= @repair.taken_in_by ? @repair.taken_in_by.display_name : "Not recorded" %></p>
 <p>Mechanic: <%= @repair.staff_member ? link_to(@repair.staff_member.name, @repair.staff_member) : "Unassigned" %></p>
 <p>Status: <%= @repair.status.humanize %></p>
@@ -13,8 +14,12 @@
 <% end %>
 
 <div class="d-flex gap-2 mb-4">
-  <%= link_to "Edit", edit_repair_path(@repair), class: "btn btn-outline-primary" %>
-  <%= button_to "Delete", @repair, method: :delete, class: "btn btn-outline-danger", form: { data: { turbo_confirm: "Delete repair #{@repair}? Its services go with it." } } %>
+  <% if policy(@repair).update? %>
+    <%= link_to "Edit", edit_repair_path(@repair), class: "btn btn-outline-primary" %>
+  <% end %>
+  <% if policy(@repair).destroy? %>
+    <%= button_to "Delete", @repair, method: :delete, class: "btn btn-outline-danger", form: { data: { turbo_confirm: "Delete repair #{@repair}? Its services go with it." } } %>
+  <% end %>
 </div>
 
 <h2>Diagnosis</h2>
@@ -25,7 +30,7 @@
 <% end %>
 
 <h2>Intake photos</h2>
-<%= render "photos", repair: @repair, removable: true %>
+<%= render "photos", repair: @repair, removable: policy(@repair).remove_photo? %>
 
 <h2 class="mt-4">Services charged</h2>
 <% if @repair.repair_line_items.any? %>
